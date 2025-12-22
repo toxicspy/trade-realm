@@ -13,6 +13,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BullBearSelector } from "@/components/BullBearSelector";
+import { CommandDashboard } from "@/components/CommandDashboard";
 import type { MarketIndex, CryptoPrice } from "@shared/schema";
 
 export default function MarketPage() {
@@ -161,136 +162,149 @@ export default function MarketPage() {
           )}
         </motion.div>
 
-        {/* Indices / Prices Grid */}
-        <div className="mb-20">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2 text-primary">
-              {mode === "bear" ? <TrendingDown className="w-5 h-5 text-red-500" /> : <TrendingUp className="w-5 h-5" />}
-              <h2 className={cn("text-xl font-heading font-semibold uppercase tracking-widest", mode === "bear" && "text-red-500")}>
-                {mode === "bull" ? "Markets leading the charge..." : mode === "bear" ? "Markets bleeding the most today..." : (isCrypto ? "Live Asset Prices" : "Market Indices")}
-              </h2>
-            </div>
-          </div>
-          
-          {showCrypto ? (
-             // Crypto Grid
-             isCryptoLoading ? (
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                 {[1,2,3,4].map(i => <div key={i} className="h-40 bg-white/5 animate-pulse rounded-xl" />)}
-               </div>
-             ) : (
-               <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                 <AnimatePresence mode="popLayout">
-                   {filteredAssets.map((asset, i) => (
-                     <motion.div
-                       key={asset.id}
-                       layout
-                       initial={{ opacity: 0, scale: 0.9 }}
-                       animate={{ opacity: 1, scale: 1 }}
-                       exit={{ opacity: 0, scale: 0.9 }}
-                       transition={{ duration: 0.3 }}
-                     >
-                       <CryptoCard data={asset as CryptoPrice} index={i} />
-                     </motion.div>
-                   ))}
-                 </AnimatePresence>
-               </motion.div>
-             )
-          ) : (
-            // Standard Indices Grid
-            isIndicesLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[1,2,3].map(i => <div key={i} className="h-40 bg-white/5 animate-pulse rounded-xl" />)}
+        {mode !== "normal" ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.5 }}
+          >
+            <CommandDashboard mode={mode as "bull" | "bear"} region={region} />
+          </motion.div>
+        ) : (
+          <>
+            {/* Indices / Prices Grid */}
+            <div className="mb-20">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2 text-primary">
+                  <TrendingUp className="w-5 h-5" />
+                  <h2 className="text-xl font-heading font-semibold uppercase tracking-widest">
+                    {isCrypto ? "Live Asset Prices" : "Market Indices"}
+                  </h2>
+                </div>
               </div>
-            ) : (
-              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <AnimatePresence mode="popLayout">
-                  {filteredAssets.map((asset, i) => (
-                    <motion.div
-                      key={asset.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <MarketIndexCard data={asset as MarketIndex} index={i} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            )
-          )}
-        </div>
+              
+              {showCrypto ? (
+                // Crypto Grid
+                isCryptoLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[1,2,3,4].map(i => <div key={i} className="h-40 bg-white/5 animate-pulse rounded-xl" />)}
+                  </div>
+                ) : (
+                  <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <AnimatePresence mode="popLayout">
+                      {filteredAssets.map((asset, i) => (
+                        <motion.div
+                          key={asset.id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <CryptoCard data={asset as CryptoPrice} index={i} />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                )
+              ) : (
+                // Standard Indices Grid
+                isIndicesLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[1,2,3].map(i => <div key={i} className="h-40 bg-white/5 animate-pulse rounded-xl" />)}
+                  </div>
+                ) : (
+                  <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <AnimatePresence mode="popLayout">
+                      {filteredAssets.map((asset, i) => (
+                        <motion.div
+                          key={asset.id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <MarketIndexCard data={asset as MarketIndex} index={i} />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                )
+              )}
+            </div>
 
-        {/* News Feed */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-           <div className="lg:col-span-8">
-             <NewsFeed 
-               news={news || []} 
-               isLoading={isNewsLoading} 
-               title={`${displayRegion} Intelligence Briefing`} 
-             />
-           </div>
+            {/* News Feed */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              <div className="lg:col-span-8">
+                <NewsFeed 
+                  news={news || []} 
+                  isLoading={isNewsLoading} 
+                  title={`${displayRegion} Intelligence Briefing`} 
+                />
+              </div>
 
-           {/* Sidebar / Sentiment Analysis */}
-           <div className="lg:col-span-4 space-y-8">
-             <div className="p-6 rounded-xl border border-primary/20 bg-black/40 backdrop-blur-sm sticky top-32">
-               <h3 className="font-heading text-lg text-primary mb-6 pb-2 border-b border-white/10">Market Sentiment</h3>
-               
-               <div className="space-y-6">
-                 <div>
-                   <div className="flex justify-between text-sm mb-2">
-                     <span className="text-green-400">Bullish</span>
-                     <span className="text-white font-mono">65%</span>
-                   </div>
-                   <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                     <motion.div 
-                       initial={{ width: 0 }} 
-                       animate={{ width: "65%" }} 
-                       transition={{ duration: 1, delay: 0.5 }}
-                       className="h-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" 
-                     />
-                   </div>
-                 </div>
+              {/* Sidebar / Sentiment Analysis */}
+              <div className="lg:col-span-4 space-y-8">
+                <div className="p-6 rounded-xl border border-primary/20 bg-black/40 backdrop-blur-sm sticky top-32">
+                  <h3 className="font-heading text-lg text-primary mb-6 pb-2 border-b border-white/10">Market Sentiment</h3>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-green-400">Bullish</span>
+                        <span className="text-white font-mono">65%</span>
+                      </div>
+                      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }} 
+                          animate={{ width: "65%" }} 
+                          transition={{ duration: 1, delay: 0.5 }}
+                          className="h-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" 
+                        />
+                      </div>
+                    </div>
 
-                 <div>
-                   <div className="flex justify-between text-sm mb-2">
-                     <span className="text-red-400">Bearish</span>
-                     <span className="text-white font-mono">25%</span>
-                   </div>
-                   <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                     <motion.div 
-                       initial={{ width: 0 }} 
-                       animate={{ width: "25%" }} 
-                       transition={{ duration: 1, delay: 0.7 }}
-                       className="h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
-                     />
-                   </div>
-                 </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-red-400">Bearish</span>
+                        <span className="text-white font-mono">25%</span>
+                      </div>
+                      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }} 
+                          animate={{ width: "25%" }} 
+                          transition={{ duration: 1, delay: 0.7 }}
+                          className="h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
+                        />
+                      </div>
+                    </div>
 
-                 <div>
-                   <div className="flex justify-between text-sm mb-2">
-                     <span className="text-yellow-400">Neutral</span>
-                     <span className="text-white font-mono">10%</span>
-                   </div>
-                   <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                     <motion.div 
-                       initial={{ width: 0 }} 
-                       animate={{ width: "10%" }} 
-                       transition={{ duration: 1, delay: 0.9 }}
-                       className="h-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]" 
-                     />
-                   </div>
-                 </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-yellow-400">Neutral</span>
+                        <span className="text-white font-mono">10%</span>
+                      </div>
+                      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }} 
+                          animate={{ width: "10%" }} 
+                          transition={{ duration: 1, delay: 0.9 }}
+                          className="h-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]" 
+                        />
+                      </div>
+                    </div>
 
-                 <div className="pt-6 mt-6 border-t border-white/10 text-xs text-muted-foreground leading-relaxed">
-                   Sentiment analysis based on AI processing of {news?.length || 0} recent news articles and global trading volume indicators.
-                 </div>
-               </div>
-             </div>
-           </div>
-        </div>
+                    <div className="pt-6 mt-6 border-t border-white/10 text-xs text-muted-foreground leading-relaxed">
+                      Sentiment analysis based on AI processing of {news?.length || 0} recent news articles and global trading volume indicators.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </main>
 
       <Footer />

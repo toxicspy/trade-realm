@@ -1,0 +1,103 @@
+When the user clicks the Bull 🐂 or Bear 🐻 symbol, transform the page into a “Market Command Dashboard” layout similar in structure to a professional trading control panel.
+
+MODE TRIGGER:
+- Clicking 🐂 activates BULL MODE (gainers)
+- Clicking 🐻 activates BEAR MODE (losers)
+- Page updates dynamically without reload
+
+LAYOUT STRUCTURE (3-COLUMN DASHBOARD):
+
+-------------------------------------
+LEFT COLUMN – PORTFOLIO SUMMARY
+-------------------------------------
+- Circular progress / ring indicator
+- Title:
+  - Bull mode: “TOTAL MARKET GAIN”
+  - Bear mode: “TOTAL MARKET LOSS”
+- Show overall percentage (+ / -)
+- Arrow direction:
+  - Bull → upward arrow (green/gold)
+  - Bear → downward arrow (red)
+- Smooth animated fill of the circle
+
+-------------------------------------
+CENTER COLUMN – RANKED COMPANIES LIST
+-------------------------------------
+- Title at top:
+  - Bull mode: “PEAK MARKET GAIN”
+  - Bear mode: “PEAK MARKET LOSS”
+
+- Display a vertical list of companies/markets
+- Sorted automatically:
+  - Bull: Highest gain → Lowest gain
+  - Bear: Highest loss → Lowest loss
+
+For EACH company card:
+- Large animal icon:
+  - Bull icon for gains
+  - Bear icon for losses
+- Company name (e.g., Tesla, Apple, Google)
+- Gain/Loss percentage
+- Visual scaling:
+  - Higher gain/loss → larger icon & brighter glow
+  - Smaller gain/loss → smaller icon & softer glow
+- Color logic:
+  - Bull: green → gold gradient
+  - Bear: red → crimson gradient
+- Smooth hover animation (slight scale + glow)
+
+-------------------------------------
+RIGHT COLUMN – MARKET PERFORMANCE GRAPHS
+-------------------------------------
+- Stack 2–3 small charts vertically
+- Charts show:
+  - Trend movement
+  - Volume or momentum
+- Bull mode:
+  - Upward trending lines
+  - Green/gold bars
+- Bear mode:
+  - Downward trending lines
+  - Red/dark bars
+- Animate charts on mode switch
+
+-------------------------------------
+DATA HANDLING:
+-------------------------------------
+- Use mock JSON data:
+  - companyName
+  - market (USA, India, Japan, Crypto)
+  - value (positive or negative)
+- Filter data based on:
+  - Selected market
+  - Bull or Bear mode
+- Sorting must be automatic and dynamic
+
+-------------------------------------
+INTERACTION & UX:
+-------------------------------------
+- Smooth transition when switching Bull/Bear
+- Fade + slide animations for list reorder
+- Highlight active symbol (Bull or Bear)
+- Allow toggling back to normal dashboard view
+
+-------------------------------------
+ROUTING & STATE:
+-------------------------------------
+- Store mode (bull/bear) in state
+- Optional URL support:
+  ?mode=bull or ?mode=bear
+- Browser back/forward buttons must work
+
+-------------------------------------
+DESIGN THEME:
+-------------------------------------
+- Dark fantasy / futuristic trading realm
+- Cinematic lighting
+- Subtle glow, depth, shadows
+- Clean typography, no clutter
+
+-------------------------------------
+GOAL:
+-------------------------------------
+Clicking Bull or Bear should feel like issuing a royal command that reorganizes the entire market intelligence into a powerful, visual dashboard showing the strongest gains or deepest losses in a dramatic, professional format.
