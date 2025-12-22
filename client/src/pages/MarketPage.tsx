@@ -13,6 +13,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BullBearSelector } from "@/components/BullBearSelector";
+import type { MarketIndex, CryptoPrice } from "@shared/schema";
 
 export default function MarketPage() {
   const { region } = useParams();
@@ -116,35 +117,36 @@ export default function MarketPage() {
             <BullBearSelector mode={mode} onChange={handleModeChange} />
             <div className="flex items-center gap-4">
                {/* Date Picker Filter - Secondary method */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-[240px] justify-start text-left font-normal border-primary/20 hover:border-primary/50 bg-black/50",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : <span>Filter archives by date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-black border border-primary/20" align="end">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(selectedDate) => {
-                    if (selectedDate) {
-                      const dateStr = format(selectedDate, "yyyy-MM-dd");
-                      window.history.pushState(null, "", `${window.location.pathname}?date=${dateStr}`);
-                      setDate(selectedDate);
-                    }
-                  }}
-                  initialFocus
-                  className="bg-black text-white"
-                />
-              </PopoverContent>
-            </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[240px] justify-start text-left font-normal border-primary/20 hover:border-primary/50 bg-black/50",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Filter archives by date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-black border border-primary/20" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(selectedDate) => {
+                      if (selectedDate) {
+                        const dateStr = format(selectedDate, "yyyy-MM-dd");
+                        window.history.pushState(null, "", `${window.location.pathname}?date=${dateStr}`);
+                        setDate(selectedDate);
+                      }
+                    }}
+                    initialFocus
+                    className="bg-black text-white"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
           
           {/* Loading state when date is selected */}
@@ -179,16 +181,16 @@ export default function MarketPage() {
              ) : (
                <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                  <AnimatePresence mode="popLayout">
-                   {filteredAssets.map((coin, i) => (
+                   {filteredAssets.map((asset, i) => (
                      <motion.div
-                       key={coin.id}
+                       key={asset.id}
                        layout
                        initial={{ opacity: 0, scale: 0.9 }}
                        animate={{ opacity: 1, scale: 1 }}
                        exit={{ opacity: 0, scale: 0.9 }}
                        transition={{ duration: 0.3 }}
                      >
-                       <CryptoCard data={coin} index={i} />
+                       <CryptoCard data={asset as CryptoPrice} index={i} />
                      </motion.div>
                    ))}
                  </AnimatePresence>
@@ -203,16 +205,16 @@ export default function MarketPage() {
             ) : (
               <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <AnimatePresence mode="popLayout">
-                  {filteredAssets.map((index, i) => (
+                  {filteredAssets.map((asset, i) => (
                     <motion.div
-                      key={index.id}
+                      key={asset.id}
                       layout
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <MarketIndexCard data={index} index={i} />
+                      <MarketIndexCard data={asset as MarketIndex} index={i} />
                     </motion.div>
                   ))}
                 </AnimatePresence>
