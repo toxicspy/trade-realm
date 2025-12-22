@@ -1,16 +1,34 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
+import type { Server } from "http";
 import { storage } from "./storage";
+import { api } from "@shared/routes";
+import { z } from "zod";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  
+  // Seed data on startup
+  await storage.seedData();
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  app.get(api.news.list.path, async (req, res) => {
+    const region = req.query.region as string | undefined;
+    const date = req.query.date as string | undefined;
+    const news = await storage.getMarketNews(region, date);
+    res.json(news);
+  });
+
+  app.get(api.indices.list.path, async (req, res) => {
+    const region = req.query.region as string | undefined;
+    const indices = await storage.getMarketIndices(region);
+    res.json(indices);
+  });
+
+  app.get(api.crypto.list.path, async (req, res) => {
+    const prices = await storage.getCryptoPrices();
+    res.json(prices);
+  });
 
   return httpServer;
 }

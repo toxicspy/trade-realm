@@ -1,38 +1,94 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import {
+  marketNews,
+  marketIndices,
+  cryptoPrices,
+  type InsertMarketNews,
+  type InsertMarketIndex,
+  type InsertCryptoPrice,
+  type MarketNews,
+  type MarketIndex,
+  type CryptoPrice,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getMarketNews(region?: string, date?: string): Promise<MarketNews[]>;
+  getMarketIndices(region?: string): Promise<MarketIndex[]>;
+  getCryptoPrices(): Promise<CryptoPrice[]>;
+  seedData(): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+export class DatabaseStorage implements IStorage {
+  async getMarketNews(region?: string, date?: string): Promise<MarketNews[]> {
+    let query = db.select().from(marketNews);
+    
+    // We can filter in memory or extend the query builder dynamically
+    // For simplicity with drizzle query builder:
+    const conditions = [];
+    if (region) conditions.push(eq(marketNews.region, region));
+    if (date) conditions.push(eq(marketNews.date, date));
 
-  constructor() {
-    this.users = new Map();
+    if (conditions.length > 0) {
+      // @ts-ignore - straightforward stacking of where clauses or 'and'
+      return await db.select().from(marketNews).where(and(...conditions));
+    }
+    
+    return await db.select().from(marketNews);
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getMarketIndices(region?: string): Promise<MarketIndex[]> {
+    if (region) {
+      return await db.select().from(marketIndices).where(eq(marketIndices.region, region));
+    }
+    return await db.select().from(marketIndices);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async getCryptoPrices(): Promise<CryptoPrice[]> {
+    return await db.select().from(cryptoPrices);
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async seedData(): Promise<void> {
+    const existingNews = await db.select().from(marketNews).limit(1);
+    if (existingNews.length === 0) {
+      console.log("Seeding data...");
+      const today = new Date().toISOString().split('T')[0];
+
+      // SEED INDICES
+      await db.insert(marketIndices).values([
+        { region: 'USA', name: 'S&P 500', value: '4,783.45', change: '+23.12', changePercent: '+0.48%' },
+        { region: 'USA', name: 'NASDAQ', value: '15,678.90', change: '+145.32', changePercent: '+0.93%' },
+        { region: 'USA', name: 'DOW JONES', value: '37,890.12', change: '-45.67', changePercent: '-0.12%' },
+        { region: 'India', name: 'NIFTY 50', value: '21,456.70', change: '+123.45', changePercent: '+0.58%' },
+        { region: 'India', name: 'SENSEX', value: '71,234.56', change: '+345.67', changePercent: '+0.49%' },
+        { region: 'Japan', name: 'NIKKEI 225', value: '33,456.78', change: '+567.89', changePercent: '+1.73%' },
+      ]);
+
+      // SEED CRYPTO
+      await db.insert(cryptoPrices).values([
+        { symbol: 'BTC', name: 'Bitcoin', price: '$43,567.89', change24h: '+2.34%' },
+        { symbol: 'ETH', name: 'Ethereum', price: '$2,345.67', change24h: '+1.56%' },
+        { symbol: 'SOL', name: 'Solana', price: '$98.76', change24h: '+5.67%' },
+      ]);
+
+      // SEED NEWS
+      await db.insert(marketNews).values([
+        // GLOBAL / USA
+        { region: 'Global', date: today, title: 'The Crown Jewel of Markets: Global Liquidity Surges', content: 'In a stunning display of economic resilience, global markets have rallied as central banks signal a potential shift in monetary policy. The Kingdom of Commerce rejoices.', type: 'briefing', sentiment: 'bullish' },
+        { region: 'USA', date: today, title: 'Tech Titans Fortify Their Strongholds', content: 'Silicon Valley giants continue their upward march, with AI developments leading the charge. The sector remains the golden goose of the American empire.', type: 'news', sentiment: 'bullish' },
+        
+        // INDIA
+        { region: 'India', date: today, title: 'The Eastern Tiger Roars', content: 'India\'s infrastructure spending hits new highs, promising a golden era of development. Investors flock to the subcontinent seeking royal returns.', type: 'news', sentiment: 'bullish' },
+        
+        // JAPAN
+        { region: 'Japan', date: today, title: 'Sunrise Over Tokyo: Tech Sector Rebounds', content: 'After a brief slumber, Japanese tech stocks have awakened with vigor, driven by export demands and currency fluctuations favorable to the Emperor\'s merchants.', type: 'news', sentiment: 'neutral' },
+
+        // CRYPTO
+        { region: 'Crypto', date: today, title: 'Digital Gold Shines Brighter', content: 'Bitcoin reclaims key territories as institutional interest grows. The digital realm is buzzing with activity as new protocols emerge from the shadows.', type: 'news', sentiment: 'bullish' },
+      ]);
+      console.log("Data seeded.");
+    }
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
