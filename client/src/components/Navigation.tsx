@@ -1,35 +1,166 @@
 import { Link, useLocation } from "wouter";
-import { Crown, Calendar, Search, Globe, ChevronDown, Menu } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Crown, Calendar, Search, Globe, ChevronDown, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-// Simple Calendar Modal (Mockup for navigation integration)
-function CalendarDropdown({ 
-  selectedDate, 
-  onSelect 
+// Full Interactive Calendar Modal
+function CalendarModal({ 
+  isOpen,
+  onClose,
+  onSelectDate
 }: { 
-  selectedDate: Date | undefined, 
-  onSelect: (d: Date | undefined) => void 
+  isOpen: boolean,
+  onClose: () => void,
+  onSelectDate: (date: Date) => void
 }) {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  // Pad with days from previous month
+  const startingDayOfWeek = monthStart.getDay();
+  const previousMonthDays = [];
+  const prevMonthEnd = new Date(monthStart);
+  prevMonthEnd.setDate(0);
+  for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+    previousMonthDays.unshift(new Date(prevMonthEnd.getFullYear(), prevMonthEnd.getMonth(), prevMonthEnd.getDate() - i));
+  }
+
+  const allDays = [...previousMonthDays, ...daysInMonth];
+
+  const handleSelectDate = (date: Date) => {
+    onSelectDate(date);
+    onClose();
+  };
+
+  const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
   return (
-    <div className="absolute top-full right-0 mt-2 p-4 bg-black/95 border border-primary/20 rounded-lg shadow-2xl z-50 w-64">
-       <div className="text-center text-primary mb-2 font-heading">Time Travel</div>
-       {/* Simplified for demo - in real app integrate react-day-picker here */}
-       <div className="grid grid-cols-7 gap-1 text-xs text-center text-muted-foreground">
-         {Array.from({length: 30}).map((_, i) => (
-           <button 
-             key={i}
-             onClick={() => onSelect(new Date(2024, 4, i+1))}
-             className="p-2 hover:bg-primary/20 hover:text-primary rounded transition-colors"
-           >
-             {i+1}
-           </button>
-         ))}
-       </div>
-    </div>
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          />
+          
+          {/* Modal */}
+          <motion.div 
+            ref={modalRef}
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-96 p-8 bg-black border border-primary/30 rounded-2xl shadow-[0_0_40px_rgba(255,215,0,0.1)]"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-heading text-primary uppercase tracking-wider">
+                Market Time Portal
+              </h2>
+              <button 
+                onClick={onClose}
+                className="p-1 hover:bg-primary/10 rounded transition-colors text-muted-foreground hover:text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Month/Year Navigation */}
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-primary/10">
+              <button 
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                className="p-2 hover:bg-primary/10 rounded transition-colors text-primary"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <h3 className="text-lg font-heading text-white uppercase tracking-wide">
+                {format(currentMonth, "MMMM yyyy")}
+              </h3>
+              
+              <button 
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                className="p-2 hover:bg-primary/10 rounded transition-colors text-primary"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Day Labels */}
+            <div className="grid grid-cols-7 gap-2 mb-4">
+              {dayLabels.map(day => (
+                <div key={day} className="text-center text-xs font-heading text-primary/70 py-2 uppercase tracking-wider">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-2">
+              {allDays.map((day, idx) => {
+                const isCurrentMonth = isSameMonth(day, currentMonth);
+                const isTodayDate = isToday(day);
+                const isClickable = isCurrentMonth || true;
+                
+                return (
+                  <motion.button
+                    key={idx}
+                    whileHover={{ scale: isClickable ? 1.05 : 1 }}
+                    onClick={() => handleSelectDate(day)}
+                    disabled={!isClickable}
+                    className={cn(
+                      "aspect-square rounded-lg font-semibold text-sm transition-all duration-200 relative overflow-hidden",
+                      isCurrentMonth ? "text-white cursor-pointer" : "text-muted-foreground/50 cursor-default",
+                      isTodayDate && isCurrentMonth ? "bg-gradient-to-br from-primary/40 to-primary/20 border border-primary text-primary shadow-[0_0_15px_rgba(255,215,0,0.3)]" : "",
+                      isCurrentMonth && !isTodayDate ? "hover:bg-primary/20" : "",
+                      !isCurrentMonth ? "opacity-30" : ""
+                    )}
+                  >
+                    {format(day, "d")}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Footer Info */}
+            <div className="mt-8 pt-4 border-t border-primary/10 text-center text-xs text-muted-foreground">
+              <p>Press ESC or click outside to close</p>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -38,6 +169,7 @@ export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMarketOpen, setIsMarketOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   
   // Detect scroll for navbar background
   useEffect(() => {
@@ -127,15 +259,32 @@ export function Navigation() {
           <div className="h-4 w-[1px] bg-white/10" />
 
           <div className="flex items-center gap-4 text-primary">
-            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-              <Calendar className="w-3 h-3 text-primary" />
-              <span>{format(currentDate, "MMM dd, yyyy")}</span>
-            </div>
+            <button 
+              onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+              className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full border border-white/5 hover:border-primary/30 transition-all duration-300 cursor-pointer group"
+            >
+              <Calendar className="w-3 h-3 text-primary group-hover:text-primary transition-colors" />
+              <span className="group-hover:text-primary transition-colors">{format(currentDate, "MMM dd, yyyy")}</span>
+            </button>
             
             <button className="hover:bg-primary/20 p-2 rounded-full transition-colors">
               <Search className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Calendar Modal */}
+          <CalendarModal 
+            isOpen={isCalendarOpen}
+            onClose={() => setIsCalendarOpen(false)}
+            onSelectDate={(date) => {
+              // Get current location path
+              const currentPath = location.includes("/market/") ? location.split("?")[0] : "/market/USA";
+              const dateStr = format(date, "yyyy-MM-dd");
+              window.history.pushState(null, "", `${currentPath}?date=${dateStr}`);
+              // Trigger a page reload or state update to fetch new data
+              window.location.reload();
+            }}
+          />
         </nav>
 
         {/* Mobile Toggle */}

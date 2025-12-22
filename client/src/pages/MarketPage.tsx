@@ -6,7 +6,7 @@ import { MarketIndexCard, CryptoCard } from "@/components/MarketCards";
 import { NewsFeed } from "@/components/NewsFeed";
 import { motion } from "framer-motion";
 import { TrendingUp, BarChart3, Bitcoin, Calendar as CalendarIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,11 +15,22 @@ import { cn } from "@/lib/utils";
 
 export default function MarketPage() {
   const { region } = useParams();
+  // Get date from URL query parameter and update on URL changes
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dateStr = params.get("date");
+    if (dateStr) {
+      setDate(new Date(dateStr));
+    } else {
+      setDate(undefined);
+    }
+  }, []);
+
   // Capitalize region for display
   const displayRegion = region ? region.charAt(0).toUpperCase() + region.slice(1) : "Unknown";
   const isCrypto = displayRegion === "Crypto";
-
-  const [date, setDate] = useState<Date | undefined>(undefined);
 
   const { data: news, isLoading: isNewsLoading } = useMarketNews(isCrypto ? "Crypto" : displayRegion, date);
   const { data: indices, isLoading: isIndicesLoading } = useMarketIndices(displayRegion);
@@ -54,7 +65,7 @@ export default function MarketPage() {
           </div>
 
           <div className="flex items-center gap-4">
-             {/* Date Picker Filter */}
+             {/* Date Picker Filter - Secondary method */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -72,13 +83,30 @@ export default function MarketPage() {
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={(selectedDate) => {
+                    if (selectedDate) {
+                      const dateStr = format(selectedDate, "yyyy-MM-dd");
+                      window.history.pushState(null, "", `${window.location.pathname}?date=${dateStr}`);
+                      setDate(selectedDate);
+                    }
+                  }}
                   initialFocus
                   className="bg-black text-white"
                 />
               </PopoverContent>
             </Popover>
           </div>
+          
+          {/* Loading state when date is selected */}
+          {date && isNewsLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute top-32 left-1/2 -translate-x-1/2 px-6 py-3 bg-primary/10 border border-primary/30 rounded-lg text-primary text-sm font-heading"
+            >
+              Retrieving market records from {format(date, "MMMM dd, yyyy")}…
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Indices / Prices Grid */}
