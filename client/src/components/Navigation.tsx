@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { SearchModal } from "@/components/SearchModal";
+import { searchContent, type SearchResult } from "@/lib/search";
 
 // Full Interactive Calendar Modal
 function CalendarModal({ 
@@ -170,6 +172,12 @@ export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMarketOpen, setIsMarketOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchDebounceRef = useRef<NodeJS.Timeout>();
   
   // Detect scroll for navbar background
   useEffect(() => {
@@ -177,6 +185,57 @@ export function Navigation() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Debounced search
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+    
+    // Clear previous timeout
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
+    if (value.trim().length === 0) {
+      setIsSearchOpen(false);
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearchLoading(true);
+    setIsSearchOpen(true);
+
+    // Debounce search by 300ms
+    searchDebounceRef.current = setTimeout(() => {
+      const results = searchContent(value);
+      setSearchResults(results);
+      setIsSearchLoading(false);
+    }, 300);
+  }, []);
+
+  // Close search when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchInputRef.current && !searchInputRef.current.contains(e.target as Node)) {
+        // Check if click is on search results
+        const searchContainer = (e.target as Node).parentElement;
+        if (!searchContainer?.className.includes("search-results")) {
+          setIsSearchOpen(false);
+        }
+      }
+    };
+
+    if (isSearchOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isSearchOpen]);
+
+  // Handle search result click
+  const handleResultClick = (result: SearchResult) => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+    setSearchResults([]);
+  };
 
   const navLinks = [
     { name: "USA", href: "/market/USA" },
@@ -259,16 +318,36 @@ export function Navigation() {
           <div className="h-4 w-[1px] bg-white/10" />
 
           <div className="flex items-center gap-4 text-primary">
+            {/* Search Bar */}
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
+                <Search className="w-4 h-4" />
+              </div>
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onFocus={() => searchQuery.length > 0 && setIsSearchOpen(true)}
+                placeholder="Search markets, news..."
+                className="bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 focus:border-primary/50 text-white placeholder:text-muted-foreground text-sm px-10 py-2 rounded-full w-48 transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-primary/30"
+              />
+              <div className="search-results relative">
+                <SearchModal
+                  results={searchResults}
+                  isOpen={isSearchOpen}
+                  isLoading={isSearchLoading}
+                  onResultClick={handleResultClick}
+                />
+              </div>
+            </div>
+
             <button 
               onClick={() => setIsCalendarOpen(!isCalendarOpen)}
               className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full border border-white/5 hover:border-primary/30 transition-all duration-300 cursor-pointer group"
             >
               <Calendar className="w-3 h-3 text-primary group-hover:text-primary transition-colors" />
               <span className="group-hover:text-primary transition-colors">{format(currentDate, "MMM dd, yyyy")}</span>
-            </button>
-            
-            <button className="hover:bg-primary/20 p-2 rounded-full transition-colors">
-              <Search className="w-4 h-4" />
             </button>
           </div>
 
