@@ -1,0 +1,70 @@
+Add a date-based content publishing system to “The Trading Realm” website that works even when no content is available yet.
+
+CONTENT AVAILABILITY LOGIC:
+- The website should support daily trading/news content
+- For now, assume content may NOT exist for many dates
+- The UI must still show dedicated space for content on every selected date
+
+DATE SEARCH BEHAVIOR:
+- When a user selects a date using:
+  - Calendar popup
+  - Search bar (date-based)
+- The page should update dynamically (no reload)
+- Show the selected date clearly on the page
+
+PLACEHOLDER STATE (NO CONTENT YET):
+- If no content exists for the selected date:
+  - Display a styled placeholder message
+  - Message example:
+    “Market records for [Selected Date] are not yet published.”
+- Also show:
+  - Selected date (formatted nicely)
+  - Market name (USA / India / Japan / Crypto)
+- Use subtle animation (fade-in)
+- Do NOT leave the page empty
+
+PLACEHOLDER DESIGN:
+- Match dark fantasy / futuristic theme
+- Use calm, professional wording
+- Optional icon (scroll / archive / lock / time)
+- Avoid looking like an error
+- This should feel intentional, not broken
+
+CONTENT CONTAINER STRUCTURE:
+- Always render content sections such as:
+  - Daily Market Summary
+  - Key Market Events
+  - Market Mood (Bullish / Bearish / Neutral)
+- If content exists → show real data
+- If content does NOT exist → show “Not yet published” placeholders
+
+ADMIN-FRIENDLY STRUCTURE (FUTURE READY):
+- Structure content using mock JSON or data objects keyed by date
+- Example logic:
+  - If data exists for date → render content
+  - If data does not exist → render placeholder
+- Code should be flexible so that:
+  - Admin can later add content for a specific date
+  - Once added, users automatically see it
+- No hardcoding of messages per date
+
+ADMIN CONTENT ADDING (FUTURE SCOPE):
+- Prepare structure so content can later be:
+  - Added manually in a file
+  - Or fetched from an API / CMS
+- No UI for admin needed now, just code readiness
+
+USER EXPERIENCE:
+- Always acknowledge the date the user selected
+- Never confuse users with blank pages
+- Maintain smooth navigation and animations
+- Browser back and forward buttons must work
+
+ROUTING:
+- Selected date should appear in the URL
+- Users should be able to bookmark a date
+- URL example:
+  /usa/2025-12-22
+
+GOAL:
+The website should behave like a professional trading platform where users can explore any date, see clearly whether content exists, and understand that missing data is simply “not yet published”, while allowing the admin to add content later without redesigning the system.

@@ -1,17 +1,18 @@
-import { motion } from "framer-motion";
-import { format } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
+import { format, parseISO, isValid } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import type { MarketNews } from "@shared/schema";
-import { Calendar, Globe, AlertCircle, FileText } from "lucide-react";
+import { Calendar, Globe, AlertCircle, FileText, Archive, Clock, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NewsFeedProps {
   news: MarketNews[];
   isLoading: boolean;
   title?: string;
+  selectedDate?: string;
 }
 
-export function NewsFeed({ news, isLoading, title = "Royal Briefing" }: NewsFeedProps) {
+export function NewsFeed({ news, isLoading, title = "Royal Briefing", selectedDate }: NewsFeedProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -23,14 +24,7 @@ export function NewsFeed({ news, isLoading, title = "Royal Briefing" }: NewsFeed
     );
   }
 
-  if (news.length === 0) {
-    return (
-      <div className="text-center py-20 border border-dashed border-white/10 rounded-xl">
-        <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-        <p className="text-muted-foreground">No records found in the archives.</p>
-      </div>
-    );
-  }
+  const formattedDate = selectedDate ? (isValid(parseISO(selectedDate)) ? format(parseISO(selectedDate), "MMMM dd, yyyy") : selectedDate) : null;
 
   return (
     <div className="relative">
@@ -42,11 +36,53 @@ export function NewsFeed({ news, isLoading, title = "Royal Briefing" }: NewsFeed
         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       </div>
 
-      <div className="space-y-6">
-        {news.map((item, index) => (
-          <NewsCard key={item.id} item={item} index={index} />
-        ))}
-      </div>
+      <AnimatePresence mode="wait">
+        {news.length > 0 ? (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+            {news.map((item, index) => (
+              <NewsCard key={item.id} item={item} index={index} />
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="placeholder"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex flex-col items-center justify-center py-20 text-center"
+          >
+            <div className="mb-6 p-6 rounded-full bg-white/5 border border-white/10 text-muted-foreground/30">
+              <Archive size={48} className="animate-pulse" />
+            </div>
+            <h3 className="text-2xl font-heading font-bold text-white mb-2">
+              Market Intelligence Not Yet Published
+            </h3>
+            <p className="text-muted-foreground max-w-md mx-auto mb-8">
+              The records for <span className="text-primary font-mono">{formattedDate || "this date"}</span> are currently being processed by the Imperial Archives.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl opacity-40">
+              <div className="p-4 rounded-lg border border-white/10 bg-white/5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground flex flex-col items-center gap-3">
+                <FileText size={16} className="text-primary/50" />
+                Daily Summary Locked
+              </div>
+              <div className="p-4 rounded-lg border border-white/10 bg-white/5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground flex flex-col items-center gap-3">
+                <Activity size={16} className="text-primary/50" />
+                Key Events Pending
+              </div>
+              <div className="p-4 rounded-lg border border-white/10 bg-white/5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground flex flex-col items-center gap-3">
+                <Clock size={16} className="text-primary/50" />
+                Market Mood Unknown
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

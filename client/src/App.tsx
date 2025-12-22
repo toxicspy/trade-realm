@@ -12,7 +12,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       {/* Route handles :region param (usa, india, japan, crypto) */}
-      <Route path="/market/:region" component={MarketPage} />
+      <Route path="/market/:region/:date?" component={MarketPage} />
       <Route component={NotFound} />
     </Switch>
   );

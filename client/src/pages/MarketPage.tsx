@@ -17,7 +17,7 @@ import { CommandDashboard } from "@/components/CommandDashboard";
 import type { MarketIndex, CryptoPrice } from "@shared/schema";
 
 export default function MarketPage() {
-  const { region } = useParams();
+  const { region, date: urlDate } = useParams();
   
   const search = useSearch();
   const searchParams = new URLSearchParams(search);
@@ -35,18 +35,16 @@ export default function MarketPage() {
     window.history.pushState(null, "", url.toString());
   };
 
-  // Get date from URL query parameter and update on URL changes
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  // Get date from URL or state
+  const [date, setDate] = useState<Date | undefined>(urlDate ? new Date(urlDate) : undefined);
   
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const dateStr = params.get("date");
-    if (dateStr) {
-      setDate(new Date(dateStr));
-    } else {
-      setDate(undefined);
+    if (urlDate) {
+      setDate(new Date(urlDate));
     }
-  }, []);
+  }, [urlDate]);
+
+  const dateStr = date ? format(date, "yyyy-MM-dd") : undefined;
 
   // Capitalize region for display
   const displayRegion = region ? region.charAt(0).toUpperCase() + region.slice(1) : "Unknown";
@@ -137,8 +135,10 @@ export default function MarketPage() {
                     selected={date}
                     onSelect={(selectedDate) => {
                       if (selectedDate) {
-                        const dateStr = format(selectedDate, "yyyy-MM-dd");
-                        window.history.pushState(null, "", `${window.location.pathname}?date=${dateStr}`);
+                        const dStr = format(selectedDate, "yyyy-MM-dd");
+                        // Use path-based routing for dates
+                        const newPath = `/market/${region}/${dStr}${window.location.search}`;
+                        window.history.pushState(null, "", newPath);
                         setDate(selectedDate);
                       }
                     }}
@@ -238,12 +238,13 @@ export default function MarketPage() {
             {/* News Feed */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
               <div className="lg:col-span-8">
-                <NewsFeed 
-                  news={news || []} 
-                  isLoading={isNewsLoading} 
-                  title={`${displayRegion} Intelligence Briefing`} 
-                />
-              </div>
+              <NewsFeed 
+                news={news || []} 
+                isLoading={isNewsLoading} 
+                title={`${displayRegion} Intelligence Briefing`} 
+                selectedDate={dateStr}
+              />
+            </div>
 
               {/* Sidebar / Sentiment Analysis */}
               <div className="lg:col-span-4 space-y-8">
