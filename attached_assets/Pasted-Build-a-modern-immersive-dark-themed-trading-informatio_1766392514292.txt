@@ -1,0 +1,129 @@
+Build a modern, immersive, dark-themed trading information website called “The Trading Realm”.
+
+CORE IDEA:
+The website should feel like the user has entered a royal, fantasy-style trading universe. When users enter the site, they should feel powerful — like a king or ruler being presented with global market intelligence. The experience must be cinematic, engaging, immersive, and clearly different from traditional boring finance websites.
+
+DESIGN & THEME:
+- Dark mode by default
+- Royal + futuristic theme with gold accents and glowing effects
+- Fantasy / cyber trading realm vibe
+- Smooth animations and transitions (fade, slide, scale)
+- Subtle motion effects and hover animations
+- Responsive design for mobile and desktop
+- Clean layout that feels premium, not cluttered
+
+HOMEPAGE (LANDING EXPERIENCE):
+- Full-screen cinematic landing section
+- Animated headline text:
+  “Welcome, Your Majesty. You have entered the Trading Realm.”
+- Subtitle:
+  “Global markets bow before your command.”
+- Primary CTA button:
+  “Enter the Realm”
+- Background visuals using animated charts, glowing lines, or subtle particles
+- Clicking “Enter the Realm” navigates to the main dashboard
+
+NAVIGATION BAR (PERSISTENT):
+- Visible on all pages
+- Left: Site logo / title “The Trading Realm” (click navigates to Home)
+- Right or center:
+  - Markets dropdown: USA, India, Japan, Crypto
+  - Calendar / date picker access
+  - Search bar (keyword or date-based)
+  - Theme toggle (dark/light)
+- Mobile-responsive navigation menu
+
+ROUTING & PAGE FLOW:
+- Use React with React Router (or Next.js routing)
+- Single-page app behavior (no full page reloads)
+- Browser back and forward buttons must work naturally
+- Page history should be maintained correctly
+- Routes should reflect country and selected date
+
+OPTIONAL UI NAVIGATION CONTROLS:
+- Visible Back and Forward buttons in the UI
+- Back button uses browser history
+- Forward button moves forward in history
+
+BREADCRUMBS:
+- Display breadcrumb navigation on internal pages
+- Example:
+  Home > USA > Market Briefing > Selected Date
+
+COUNTRY / MARKET PAGES:
+Create separate pages for:
+- United States (USA)
+- India
+- Japan
+- Crypto Market
+
+When a user selects a country or market:
+- Navigate to a dedicated page
+- Show latest trading-related news for that region
+- Display major indices, market highlights, and key updates
+- Use original, story-style summaries instead of raw news headlines
+- Each page must reuse the same navbar and footer
+
+CRYPTO SECTION:
+- Dedicated Crypto Market page
+- Display trending crypto news (rewritten summaries)
+- Show price cards for Bitcoin, Ethereum, etc.
+- Use futuristic visuals and glowing card components
+
+CALENDAR / DATE-BASED NEWS SYSTEM:
+- Include a clean, modern calendar or date picker component
+- Calendar should be accessible from:
+  - Navigation bar
+  - Dedicated “Market Archives” section
+- Users can select any past or current date
+
+DATE-BASED CONTENT LOADING:
+- When a date is selected:
+  - Update the URL/route with the selected date
+  - Dynamically load trading and market content for that date
+  - Do NOT reload the page
+- Display loading state text like:
+  “Retrieving market records from the archives…”
+  or
+  “Retrieving market records from [Selected Date]…”
+
+DATE-BASED CONTENT DISPLAY:
+- Show:
+  - Market news summaries (original, rewritten)
+  - Major trading or economic events of that day
+  - Market mood indicator:
+    Bullish 🟢 | Bearish 🔴 | Neutral 🟡
+- Highlight selected date visually
+- Smooth animations when date changes
+- Users should be able to bookmark date-based pages
+
+ENGAGEMENT FEATURES:
+- Daily “Royal Market Briefing” section
+- Market mood indicators and signals
+- Hover effects revealing short insights
+- Smooth page transitions and loading animations
+- The site should feel alive and interactive
+
+DATA HANDLING:
+- Use placeholder or mock JSON data initially
+- Structure code so real market/news APIs can be added later
+- APIs should be used only for data, not direct text display
+- Content must be original and rewritten (no raw API headlines)
+
+FOOTER:
+- Footer visible on all pages
+- Include:
+  - Disclaimer:
+    “This platform provides market information only and does not offer financial advice.”
+  - About
+  - Contact
+  - Copyright section
+
+TECH REQUIREMENTS:
+- Use React (preferred) or vanilla HTML/CSS/JS
+- Use Tailwind CSS or modern CSS styling
+- Clean, modular, well-structured code
+- Maintain consistent theme and layout across pages
+
+GOAL:
+The website should feel like a complete, professional, immersive trading universe — a “market realm” where users explore global trading intelligence through an engaging, royal, and futuristic experience with smooth navigation, strong usability, and zero plagiarism.
