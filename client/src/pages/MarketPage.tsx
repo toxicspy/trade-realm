@@ -1,20 +1,38 @@
-import { useParams } from "wouter";
+import { useParams, useSearch } from "wouter";
 import { useMarketNews, useMarketIndices, useCryptoPrices } from "@/hooks/use-market-data";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { MarketIndexCard, CryptoCard } from "@/components/MarketCards";
 import { NewsFeed } from "@/components/NewsFeed";
-import { motion } from "framer-motion";
-import { TrendingUp, BarChart3, Bitcoin, Calendar as CalendarIcon } from "lucide-react";
-import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { TrendingUp, BarChart3, Bitcoin, Calendar as CalendarIcon, TrendingDown } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { BullBearSelector } from "@/components/BullBearSelector";
 
 export default function MarketPage() {
   const { region } = useParams();
+  
+  const search = useSearch();
+  const searchParams = new URLSearchParams(search);
+  const initialMode = (searchParams.get("mode") as "bull" | "bear" | "normal") || "normal";
+  const [mode, setMode] = useState<"bull" | "bear" | "normal">(initialMode);
+
+  const handleModeChange = (newMode: "bull" | "bear" | "normal") => {
+    setMode(newMode);
+    const url = new URL(window.location.href);
+    if (newMode === "normal") {
+      url.searchParams.delete("mode");
+    } else {
+      url.searchParams.set("mode", newMode);
+    }
+    window.history.pushState(null, "", url.toString());
+  };
+
   // Get date from URL query parameter and update on URL changes
   const [date, setDate] = useState<Date | undefined>(undefined);
   
@@ -35,6 +53,36 @@ export default function MarketPage() {
   const { data: news, isLoading: isNewsLoading } = useMarketNews(isCrypto ? "Crypto" : displayRegion, date);
   const { data: indices, isLoading: isIndicesLoading } = useMarketIndices(displayRegion);
   const { data: cryptoPrices, isLoading: isCryptoLoading } = useCryptoPrices();
+
+  const filteredAssets = useMemo(() => {
+    if (isCrypto) {
+      if (!cryptoPrices) return [];
+      if (mode === "normal") return cryptoPrices;
+      return [...cryptoPrices]
+        .filter(p => {
+          const val = parseFloat(p.change24h.replace(/[+%]/g, ""));
+          return mode === "bull" ? val > 0 : val < 0;
+        })
+        .sort((a, b) => {
+          const valA = parseFloat(a.change24h.replace(/[+%]/g, ""));
+          const valB = parseFloat(b.change24h.replace(/[+%]/g, ""));
+          return mode === "bull" ? valB - valA : valA - valB;
+        });
+    } else {
+      if (!indices) return [];
+      if (mode === "normal") return indices;
+      return [...indices]
+        .filter(idx => {
+          const val = parseFloat(idx.changePercent.replace(/[+%]/g, ""));
+          return mode === "bull" ? val > 0 : val < 0;
+        })
+        .sort((a, b) => {
+          const valA = parseFloat(a.changePercent.replace(/[+%]/g, ""));
+          const valB = parseFloat(b.changePercent.replace(/[+%]/g, ""));
+          return mode === "bull" ? valB - valA : valA - valB;
+        });
+    }
+  }, [isCrypto, cryptoPrices, indices, mode]);
 
   // For Crypto page, we use crypto prices instead of standard indices
   const showCrypto = isCrypto;
@@ -64,8 +112,10 @@ export default function MarketPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
-             {/* Date Picker Filter - Secondary method */}
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <BullBearSelector mode={mode} onChange={handleModeChange} />
+            <div className="flex items-center gap-4">
+               {/* Date Picker Filter - Secondary method */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -111,11 +161,13 @@ export default function MarketPage() {
 
         {/* Indices / Prices Grid */}
         <div className="mb-20">
-          <div className="flex items-center gap-2 mb-6 text-primary">
-            <TrendingUp className="w-5 h-5" />
-            <h2 className="text-xl font-heading font-semibold uppercase tracking-widest">
-              {isCrypto ? "Live Asset Prices" : "Market Indices"}
-            </h2>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2 text-primary">
+              {mode === "bear" ? <TrendingDown className="w-5 h-5 text-red-500" /> : <TrendingUp className="w-5 h-5" />}
+              <h2 className={cn("text-xl font-heading font-semibold uppercase tracking-widest", mode === "bear" && "text-red-500")}>
+                {mode === "bull" ? "Markets leading the charge..." : mode === "bear" ? "Markets bleeding the most today..." : (isCrypto ? "Live Asset Prices" : "Market Indices")}
+              </h2>
+            </div>
           </div>
           
           {showCrypto ? (
@@ -125,11 +177,22 @@ export default function MarketPage() {
                  {[1,2,3,4].map(i => <div key={i} className="h-40 bg-white/5 animate-pulse rounded-xl" />)}
                </div>
              ) : (
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                 {cryptoPrices?.map((coin, i) => (
-                   <CryptoCard key={coin.id} data={coin} index={i} />
-                 ))}
-               </div>
+               <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 <AnimatePresence mode="popLayout">
+                   {filteredAssets.map((coin, i) => (
+                     <motion.div
+                       key={coin.id}
+                       layout
+                       initial={{ opacity: 0, scale: 0.9 }}
+                       animate={{ opacity: 1, scale: 1 }}
+                       exit={{ opacity: 0, scale: 0.9 }}
+                       transition={{ duration: 0.3 }}
+                     >
+                       <CryptoCard data={coin} index={i} />
+                     </motion.div>
+                   ))}
+                 </AnimatePresence>
+               </motion.div>
              )
           ) : (
             // Standard Indices Grid
@@ -138,11 +201,22 @@ export default function MarketPage() {
                 {[1,2,3].map(i => <div key={i} className="h-40 bg-white/5 animate-pulse rounded-xl" />)}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {indices?.map((index, i) => (
-                  <MarketIndexCard key={index.id} data={index} index={i} />
-                ))}
-              </div>
+              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence mode="popLayout">
+                  {filteredAssets.map((index, i) => (
+                    <motion.div
+                      key={index.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <MarketIndexCard data={index} index={i} />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
             )
           )}
         </div>

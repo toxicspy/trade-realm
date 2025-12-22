@@ -1,0 +1,73 @@
+Add interactive Bull 🐂 and Bear 🐻 market symbols to “The Trading Realm” website.
+
+SYMBOL PLACEMENT:
+- Place two large, clickable symbols in:
+  - The main dashboard
+  - Market pages (USA, India, Japan, Crypto)
+- Symbols:
+  - 🐂 Bull → Represents bullish / gaining markets
+  - 🐻 Bear → Represents bearish / losing markets
+- Symbols should be visually distinct with glowing effects:
+  - Bull: green / gold glow
+  - Bear: red / crimson glow
+
+BEAR MODE (LOSING MARKETS VIEW):
+- When a user clicks the 🐻 Bear symbol:
+  - Switch the page into “Bear Market View”
+  - Display a list of companies / markets that are in loss
+  - Sort the list in descending order:
+    - Highest loss → Lowest loss
+- Each item should show:
+  - Company / Market name
+  - Loss amount (percentage or value)
+  - A downward indicator icon
+- Visual scaling:
+  - The greater the loss:
+    - The larger the red/downward symbol
+  - Smaller losses have smaller indicators
+- Add a label like:
+  “Markets bleeding the most today…”
+
+BULL MODE (GAINING MARKETS VIEW):
+- When a user clicks the 🐂 Bull symbol:
+  - Switch the page into “Bull Market View”
+  - Display companies / markets in profit
+  - Sort the list in descending order:
+    - Highest gain → Lowest gain
+- Each item should show:
+  - Company / Market name
+  - Gain amount
+  - An upward indicator icon
+- Visual scaling:
+  - Higher gains → larger glowing green indicators
+- Add a label like:
+  “Markets leading the charge…”
+
+DATA HANDLING:
+- Use mock / placeholder JSON data initially, example:
+  - Company name
+  - Market (USA, India, Japan, Crypto)
+  - Gain/Loss value
+- Structure data so real-time APIs can be added later
+- Filtering should NOT reload the page
+
+INTERACTION & UX:
+- Smooth transition when switching between Bull and Bear modes
+- Animate sorting (fade, slide, scale)
+- Highlight the active symbol (Bull or Bear)
+- Allow toggling back to normal view
+
+ROUTING & STATE:
+- Mode selection (Bull/Bear) should:
+  - Be stored in state
+  - Optionally reflected in the URL (e.g., ?mode=bear)
+- Browser back and forward buttons must work correctly
+
+DESIGN THEME:
+- Dark fantasy / futuristic trading realm
+- Bull = dominance, growth, power
+- Bear = pressure, decline, intensity
+- Use subtle sound or motion effects (optional)
+
+GOAL:
+Clicking the Bull or Bear symbol should feel like issuing a royal command that instantly reorganizes the market intelligence, showing the strongest gains or deepest losses in a dramatic, immersive way.

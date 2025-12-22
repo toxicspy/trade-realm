@@ -1,16 +1,50 @@
-import { motion } from "framer-motion";
-import { Link } from "wouter";
-import { ArrowRight, Globe, TrendingUp, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link, useSearch } from "wouter";
+import { ArrowRight, Globe, TrendingUp, Zap, TrendingDown } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { NewsFeed } from "@/components/NewsFeed";
 import { MarketIndexCard } from "@/components/MarketCards";
 import { useMarketNews, useMarketIndices } from "@/hooks/use-market-data";
+import { BullBearSelector } from "@/components/BullBearSelector";
+import { useState, useMemo } from "react";
 
 export default function Home() {
   const { data: news, isLoading: isNewsLoading } = useMarketNews("Global");
   const { data: indices, isLoading: isIndicesLoading } = useMarketIndices("Global");
+  
+  const search = useSearch();
+  const params = new URLSearchParams(search);
+  const initialMode = (params.get("mode") as "bull" | "bear" | "normal") || "normal";
+  const [mode, setMode] = useState<"bull" | "bear" | "normal">(initialMode);
+
+  const handleModeChange = (newMode: "bull" | "bear" | "normal") => {
+    setMode(newMode);
+    const url = new URL(window.location.href);
+    if (newMode === "normal") {
+      url.searchParams.delete("mode");
+    } else {
+      url.searchParams.set("mode", newMode);
+    }
+    window.history.pushState(null, "", url.toString());
+  };
+
+  const filteredIndices = useMemo(() => {
+    if (!indices) return [];
+    if (mode === "normal") return indices;
+
+    return [...indices]
+      .filter(idx => {
+        const val = parseFloat(idx.changePercent.replace(/[+%]/g, ""));
+        return mode === "bull" ? val > 0 : val < 0;
+      })
+      .sort((a, b) => {
+        const valA = parseFloat(a.changePercent.replace(/[+%]/g, ""));
+        const valB = parseFloat(b.changePercent.replace(/[+%]/g, ""));
+        return mode === "bull" ? valB - valA : valA - valB;
+      });
+  }, [indices, mode]);
 
   // Entrance animation variants
   const containerVariants = {
@@ -89,13 +123,21 @@ export default function Home() {
       {/* Global Indices Section */}
       <section className="py-24 bg-black/50 relative">
         <div className="container mx-auto px-4 md:px-6">
-           <div className="flex items-center gap-4 mb-12">
-             <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-               <Globe className="w-6 h-6 text-primary" />
-             </div>
-             <div>
-               <h2 className="text-3xl font-heading text-white">Global Indices</h2>
-               <p className="text-muted-foreground text-sm">Key performance metrics across realms</p>
+           <BullBearSelector mode={mode} onChange={handleModeChange} />
+           
+           <div className="flex items-center justify-between mb-12">
+             <div className="flex items-center gap-4">
+               <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                 {mode === "bear" ? <TrendingDown className="w-6 h-6 text-red-500" /> : <Globe className="w-6 h-6 text-primary" />}
+               </div>
+               <div>
+                 <h2 className="text-3xl font-heading text-white">
+                   {mode === "bull" ? "Bull Market View" : mode === "bear" ? "Bear Market View" : "Global Indices"}
+                 </h2>
+                 <p className="text-muted-foreground text-sm">
+                   {mode === "bull" ? "Markets leading the charge..." : mode === "bear" ? "Markets bleeding the most today..." : "Key performance metrics across realms"}
+                 </p>
+               </div>
              </div>
            </div>
 
@@ -104,11 +146,25 @@ export default function Home() {
                {[1,2,3].map(i => <div key={i} className="h-40 bg-white/5 animate-pulse rounded-xl" />)}
              </div>
            ) : (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-               {indices?.slice(0, 4).map((index, i) => (
-                 <MarketIndexCard key={index.id} data={index} index={i} />
-               ))}
-             </div>
+             <motion.div 
+               layout
+               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+             >
+               <AnimatePresence mode="popLayout">
+                 {filteredIndices.map((index, i) => (
+                   <motion.div
+                     key={index.id}
+                     layout
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     exit={{ opacity: 0, scale: 0.9 }}
+                     transition={{ duration: 0.3 }}
+                   >
+                     <MarketIndexCard data={index} index={i} />
+                   </motion.div>
+                 ))}
+               </AnimatePresence>
+             </motion.div>
            )}
         </div>
       </section>
