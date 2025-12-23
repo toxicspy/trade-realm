@@ -50,6 +50,21 @@ export function useMarketIndices(region?: string) {
 }
 
 // ============================================
+// India Market Indices Hooks
+// ============================================
+
+export function useIndiaMarketIndices() {
+  return useQuery({
+    queryKey: ["/api/indices/india-market"],
+    queryFn: async () => {
+      const res = await fetch("/api/indices/india-market", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch India market indices");
+      return await res.json();
+    },
+  });
+}
+
+// ============================================
 // Crypto Prices Hooks
 // ============================================
 

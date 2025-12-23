@@ -11,7 +11,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
-import { fetchUSAIndices, fetchIndiaIndices, fetchJapanIndices } from "./api-service";
+import { fetchUSAIndices, fetchIndiaIndices, fetchJapanIndices, fetchIndiaMarketIndices } from "./api-service";
 
 // In-memory cache for API data
 const apiCache: Record<string, { data: MarketIndex[]; timestamp: number }> = {};
@@ -20,6 +20,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 export interface IStorage {
   getMarketNews(region?: string, date?: string): Promise<MarketNews[]>;
   getMarketIndices(region?: string): Promise<MarketIndex[]>;
+  getIndiaMarketIndices(): Promise<MarketIndex[]>;
   getCryptoPrices(): Promise<CryptoPrice[]>;
   seedData(): Promise<void>;
 }
@@ -78,6 +79,27 @@ export class DatabaseStorage implements IStorage {
       return await db.select().from(marketIndices).where(eq(marketIndices.region, region));
     }
     return await db.select().from(marketIndices);
+  }
+
+  async getIndiaMarketIndices(): Promise<MarketIndex[]> {
+    const cacheKey = "india_market_indices";
+    const now = Date.now();
+    
+    // Check cache
+    if (apiCache[cacheKey] && now - apiCache[cacheKey].timestamp < CACHE_TTL) {
+      return apiCache[cacheKey].data;
+    }
+
+    try {
+      const data = await fetchIndiaMarketIndices();
+      
+      // Cache the results
+      apiCache[cacheKey] = { data, timestamp: now };
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch India market indices:", error);
+      return [];
+    }
   }
 
   async getCryptoPrices(): Promise<CryptoPrice[]> {

@@ -1,5 +1,5 @@
 import { useParams, useSearch } from "wouter";
-import { useMarketNews, useMarketIndices, useCryptoPrices } from "@/hooks/use-market-data";
+import { useMarketNews, useMarketIndices, useCryptoPrices, useIndiaMarketIndices } from "@/hooks/use-market-data";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { MarketIndexCard, CryptoCard } from "@/components/MarketCards";
@@ -54,6 +54,7 @@ export default function MarketPage() {
   const { data: news, isLoading: isNewsLoading } = useMarketNews(isCrypto ? "Crypto" : displayRegion, date);
   const { data: indices, isLoading: isIndicesLoading } = useMarketIndices(displayRegion);
   const { data: cryptoPrices, isLoading: isCryptoLoading } = useCryptoPrices();
+  const { data: indiaMarketIndices, isLoading: isIndiaIndicesLoading } = useIndiaMarketIndices();
 
   const filteredAssets = useMemo(() => {
     if (isCrypto) {
@@ -174,6 +175,43 @@ export default function MarketPage() {
           </motion.div>
         ) : (
           <>
+            {/* India Market Indices - Display at top for India */}
+            {displayRegion === "India" && (
+              <div className="mb-12">
+                <div className="flex items-center gap-2 text-primary mb-6">
+                  <BarChart3 className="w-5 h-5" />
+                  <h2 className="text-lg font-heading font-semibold uppercase tracking-widest">
+                    Market Indices
+                  </h2>
+                </div>
+                {isIndiaIndicesLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1,2,3].map(i => <div key={i} className="h-24 bg-white/5 animate-pulse rounded-lg" />)}
+                  </div>
+                ) : indiaMarketIndices && indiaMarketIndices.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <AnimatePresence>
+                      {indiaMarketIndices.map((idx: MarketIndex, i: number) => (
+                        <motion.div
+                          key={idx.name}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <MarketIndexCard data={idx} index={i} />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Index data temporarily unavailable
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Indices / Prices Grid */}
             <div className="mb-20">
               {displayRegion === "Japan" ? (
@@ -184,7 +222,7 @@ export default function MarketPage() {
                     <div className="flex items-center gap-2 text-primary">
                       <TrendingUp className="w-5 h-5" />
                       <h2 className="text-xl font-heading font-semibold uppercase tracking-widest">
-                        {isCrypto ? "Live Asset Prices" : "Market Indices"}
+                        {isCrypto ? "Live Asset Prices" : displayRegion === "India" ? "Companies" : "Market Indices"}
                       </h2>
                     </div>
                   </div>

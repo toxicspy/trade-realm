@@ -133,3 +133,42 @@ export async function fetchJapanIndices(): Promise<MarketIndex[]> {
   // Japan market data placeholder - live data coming soon
   return [];
 }
+
+interface NSEIndexData {
+  name: string;
+  last: number;
+  variation: number;
+  percentChange: number;
+}
+
+export async function fetchIndiaMarketIndices(): Promise<MarketIndex[]> {
+  try {
+    const response = await fetch("https://nse-api-sand.vercel.app/index");
+    
+    if (!response.ok) {
+      console.error(`NSE Index API error: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    
+    if (!data.data || !Array.isArray(data.data)) {
+      console.error("Invalid NSE Index API response format");
+      return [];
+    }
+
+    // Return only top indices (typically NIFTY and BANKNIFTY are first)
+    return data.data.slice(0, 6).map((index: NSEIndexData) => ({
+      id: Math.random(),
+      region: "India",
+      name: index.name,
+      value: index.last.toFixed(2),
+      change: index.variation.toFixed(2),
+      changePercent: (index.percentChange >= 0 ? "+" : "") + index.percentChange.toFixed(2) + "%",
+      updatedAt: new Date(),
+    }));
+  } catch (error) {
+    console.error("Failed to fetch India market indices from NSE API:", error);
+    return [];
+  }
+}

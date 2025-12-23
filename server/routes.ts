@@ -25,6 +25,11 @@ export async function registerRoutes(
     res.json(indices);
   });
 
+  app.get("/api/indices/india-market", async (req, res) => {
+    const indices = await storage.getIndiaMarketIndices();
+    res.json(indices);
+  });
+
   app.get(api.crypto.list.path, async (req, res) => {
     const prices = await storage.getCryptoPrices();
     res.json(prices);
