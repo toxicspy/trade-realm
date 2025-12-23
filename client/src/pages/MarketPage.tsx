@@ -4,6 +4,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { MarketIndexCard, CryptoCard } from "@/components/MarketCards";
 import { NewsFeed } from "@/components/NewsFeed";
+import { MarketPlaceholder } from "@/components/MarketPlaceholder";
 import { motion, AnimatePresence } from "framer-motion";
 import { TrendingUp, BarChart3, Bitcoin, Calendar as CalendarIcon, TrendingDown } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
@@ -175,16 +176,20 @@ export default function MarketPage() {
           <>
             {/* Indices / Prices Grid */}
             <div className="mb-20">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2 text-primary">
-                  <TrendingUp className="w-5 h-5" />
-                  <h2 className="text-xl font-heading font-semibold uppercase tracking-widest">
-                    {isCrypto ? "Live Asset Prices" : "Market Indices"}
-                  </h2>
-                </div>
-              </div>
-              
-              {showCrypto ? (
+              {displayRegion === "Japan" ? (
+                <MarketPlaceholder region="Japan" />
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2 text-primary">
+                      <TrendingUp className="w-5 h-5" />
+                      <h2 className="text-xl font-heading font-semibold uppercase tracking-widest">
+                        {isCrypto ? "Live Asset Prices" : "Market Indices"}
+                      </h2>
+                    </div>
+                  </div>
+                  
+                  {showCrypto ? (
                 // Crypto Grid
                 isCryptoLoading ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -232,6 +237,8 @@ export default function MarketPage() {
                     </AnimatePresence>
                   </motion.div>
                 )
+              )}
+                </>
               )}
             </div>
 

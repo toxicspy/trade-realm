@@ -23,12 +23,18 @@ Preferred communication style: Simple, everyday language.
 - **API Pattern**: RESTful endpoints defined in `shared/routes.ts` with Zod validation
 - **Database ORM**: Drizzle ORM with PostgreSQL
 - **Development**: Vite dev server with HMR, tsx for TypeScript execution
+- **External APIs**: 
+  - **USA**: Finnhub API (real-time stock quotes) - requires FINNHUB_API_KEY
+  - **India**: NSE API (free, no authentication) - https://nse-api-sand.vercel.app/
+  - **Japan**: Placeholder (live data coming soon)
+  - **Crypto**: Database-driven
 
 ### Data Layer
 - **Database**: PostgreSQL with three main tables:
   - `market_news`: Region-specific news with sentiment analysis
   - `market_indices`: Market index values and changes by region
   - `crypto_prices`: Cryptocurrency price data
+- **API Caching**: 5-minute in-memory cache for real-time API data (USA/India)
 - **Schema Location**: `shared/schema.ts` with Drizzle-Zod integration for type-safe validation
 
 ### Build System
@@ -47,6 +53,10 @@ Preferred communication style: Simple, everyday language.
 ### Database
 - **PostgreSQL**: Primary data store, connection via `DATABASE_URL` environment variable
 - **connect-pg-simple**: Session storage for Express sessions
+
+### External APIs
+- **Finnhub**: Real-time USA stock market data (requires API key)
+- **NSE API**: Free Indian stock market data (no authentication required)
 
 ### UI Component Libraries
 - **Radix UI**: Headless component primitives (dialogs, dropdowns, tooltips, etc.)

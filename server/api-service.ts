@@ -77,56 +77,45 @@ async function fetchFinnhubData(symbol: string): Promise<MarketIndex | null> {
   }
 }
 
-async function fetchAlphaVantageData(symbol: string, region: string): Promise<MarketIndex | null> {
-  try {
-    const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
-    if (!apiKey) {
-      console.error("Alpha Vantage API key not set");
-      return null;
-    }
+interface NSEStockData {
+  symbol: string;
+  company_name: string;
+  last_price: number;
+  change: number;
+  percent_change: number;
+}
 
+async function fetchIndiaStockData(): Promise<MarketIndex[]> {
+  try {
+    const symbols = "RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS";
     const response = await fetch(
-      `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${apiKey}`
+      `https://nse-api-sand.vercel.app/stock/list?symbols=${symbols}&res=num`
     );
     
     if (!response.ok) {
-      console.error(`Alpha Vantage error for ${symbol}: ${response.status}`);
-      return null;
+      console.error(`NSE API error: ${response.status}`);
+      return [];
     }
 
-    const data: any = await response.json();
+    const data = await response.json();
     
-    if (!data["Time Series (Daily)"]) {
-      console.error(`No time series data for ${symbol}`);
-      return null;
+    if (!data.data || !Array.isArray(data.data)) {
+      console.error("Invalid NSE API response format");
+      return [];
     }
 
-    const timeSeries = data["Time Series (Daily)"];
-    const dates = Object.keys(timeSeries).sort().reverse();
-    
-    if (dates.length < 2) {
-      console.error(`Not enough data for ${symbol}`);
-      return null;
-    }
-
-    const today = parseFloat(timeSeries[dates[0]]["4. close"]);
-    const yesterday = parseFloat(timeSeries[dates[1]]["4. close"]);
-    
-    const change = today - yesterday;
-    const changePercent = ((change / yesterday) * 100);
-
-    return {
+    return data.data.map((stock: NSEStockData) => ({
       id: Math.random(),
-      region,
-      name: COMPANY_NAMES[symbol] || symbol,
-      value: today.toFixed(2),
-      change: change.toFixed(2),
-      changePercent: (changePercent >= 0 ? "+" : "") + changePercent.toFixed(2) + "%",
+      region: "India",
+      name: stock.company_name || COMPANY_NAMES[stock.symbol] || stock.symbol,
+      value: stock.last_price.toFixed(2),
+      change: stock.change.toFixed(2),
+      changePercent: (stock.percent_change >= 0 ? "+" : "") + stock.percent_change.toFixed(2) + "%",
       updatedAt: new Date(),
-    };
+    }));
   } catch (error) {
-    console.error(`Failed to fetch Alpha Vantage data for ${symbol}:`, error);
-    return null;
+    console.error("Failed to fetch India stock data from NSE API:", error);
+    return [];
   }
 }
 
@@ -137,17 +126,10 @@ export async function fetchUSAIndices(): Promise<MarketIndex[]> {
 }
 
 export async function fetchIndiaIndices(): Promise<MarketIndex[]> {
-  const symbols = ["RELIANCE.NSE", "TCS.NSE", "INFY.NSE", "HDFCBANK.NSE"];
-  const results = await Promise.all(
-    symbols.map(symbol => fetchAlphaVantageData(symbol, "India"))
-  );
-  return results.filter((item): item is MarketIndex => item !== null);
+  return fetchIndiaStockData();
 }
 
 export async function fetchJapanIndices(): Promise<MarketIndex[]> {
-  const symbols = ["7203.T", "6758.T", "7974.T", "9984.T"];
-  const results = await Promise.all(
-    symbols.map(symbol => fetchAlphaVantageData(symbol, "Japan"))
-  );
-  return results.filter((item): item is MarketIndex => item !== null);
+  // Japan market data placeholder - live data coming soon
+  return [];
 }
