@@ -45,8 +45,20 @@ Preferred communication style: Simple, everyday language.
 ### Key Design Patterns
 - **Shared Types**: Schema and route definitions in `shared/` folder used by both client and server
 - **Component Structure**: UI primitives from shadcn/ui in `components/ui/`, feature components at `components/` root
-- **Custom Hooks**: Data fetching hooks in `hooks/use-market-data.ts` wrap React Query calls
+- **Custom Hooks**: Data fetching hooks in `hooks/use-market-data.ts` wrap React Query calls, `hooks/use-blogs.ts` for blog data
 - **Path Aliases**: `@/` for client source, `@shared/` for shared code
+
+## Blogs Section
+- **Main Page**: `/blogs` - BlogsHub component with country and date selector
+- **Blog Post**: `/blogs/:country/:date` - BlogPostPage component shows individual blog
+- **Database Table**: `blogs` table stores country, date, title, content, excerpt, author
+- **Navigation**: Persistent navbar with "Blogs" link on all pages
+- **Features**:
+  - Country selector (USA, India, Japan, Crypto)
+  - Date picker for historical blog access
+  - Graceful "Content not published" state
+  - Dark fantasy theme with smooth transitions
+  - Sample blog posts seeded on startup
 
 ## External Dependencies
 

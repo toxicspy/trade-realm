@@ -244,6 +244,12 @@ export function Navigation() {
     { name: "Crypto", href: "/market/Crypto" },
   ];
 
+  const mainNavLinks = [
+    { name: "Home", href: "/" },
+    { name: "Markets", href: "/market/USA", isDropdown: true },
+    { name: "Blogs", href: "/blogs" },
+  ];
+
   const currentDate = new Date();
 
   return (
@@ -314,6 +320,12 @@ export function Navigation() {
               )}
             </AnimatePresence>
           </div>
+
+          <Link href="/blogs">
+            <div className={cn("nav-link cursor-pointer", location === "/blogs" && "text-primary after:w-full")}>
+              Blogs
+            </div>
+          </Link>
 
           <div className="h-4 w-[1px] bg-white/10" />
 
@@ -403,6 +415,14 @@ export function Navigation() {
                   </div>
                 </Link>
               ))}
+              <Link href="/blogs">
+                <div 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-muted-foreground hover:text-primary py-2 pl-4 border-l border-white/10 hover:border-primary transition-all"
+                >
+                  Blogs
+                </div>
+              </Link>
             </div>
           </motion.div>
         )}

@@ -35,5 +35,15 @@ export async function registerRoutes(
     res.json(prices);
   });
 
+  app.get("/api/blogs/:country/:date", async (req, res) => {
+    const { country, date } = req.params;
+    const blog = await storage.getBlog(country, date);
+    if (blog) {
+      res.json(blog);
+    } else {
+      res.status(404).json({ error: "Blog not found" });
+    }
+  });
+
   return httpServer;
 }

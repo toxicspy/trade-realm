@@ -2,12 +2,15 @@ import {
   marketNews,
   marketIndices,
   cryptoPrices,
+  blogs,
   type InsertMarketNews,
   type InsertMarketIndex,
   type InsertCryptoPrice,
+  type InsertBlog,
   type MarketNews,
   type MarketIndex,
   type CryptoPrice,
+  type Blog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
@@ -21,26 +24,24 @@ export interface IStorage {
   getMarketNews(region?: string, date?: string): Promise<MarketNews[]>;
   getMarketIndices(region?: string): Promise<MarketIndex[]>;
   getIndiaMarketIndices(): Promise<MarketIndex[]>;
-  getCryptoPrices(): Promise<CryptoPrice[]>;
+  getCryptoPrices(): Promise<any[]>;
+  getBlog(country: string, date: string): Promise<Blog | null>;
   seedData(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
   async getMarketNews(region?: string, date?: string): Promise<MarketNews[]> {
     let query = db.select().from(marketNews);
-    
-    // We can filter in memory or extend the query builder dynamically
-    // For simplicity with drizzle query builder:
-    const conditions = [];
-    if (region) conditions.push(eq(marketNews.region, region));
-    if (date) conditions.push(eq(marketNews.date, date));
 
-    if (conditions.length > 0) {
-      // @ts-ignore - straightforward stacking of where clauses or 'and'
-      return await db.select().from(marketNews).where(and(...conditions));
+    if (region) {
+      query = query.where(eq(marketNews.region, region)) as any;
+    }
+
+    if (date) {
+      query = query.where(and(eq(marketNews.region, region || ''), eq(marketNews.date, date))) as any;
     }
     
-    return await db.select().from(marketNews);
+    return await query;
   }
 
   async getMarketIndices(region?: string): Promise<MarketIndex[]> {
@@ -123,6 +124,14 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getBlog(country: string, date: string): Promise<Blog | null> {
+    const result = await db.select().from(blogs).where(
+      and(eq(blogs.country, country), eq(blogs.date, date))
+    ).limit(1);
+    
+    return result.length > 0 ? result[0] : null;
+  }
+
   async seedData(): Promise<void> {
     const existingNews = await db.select().from(marketNews).limit(1);
     if (existingNews.length === 0) {
@@ -161,6 +170,43 @@ export class DatabaseStorage implements IStorage {
         // CRYPTO
         { region: 'Crypto', date: today, title: 'Digital Gold Shines Brighter', content: 'Bitcoin reclaims key territories as institutional interest grows. The digital realm is buzzing with activity as new protocols emerge from the shadows.', type: 'news', sentiment: 'bullish' },
       ]);
+
+      // SEED BLOGS - Sample blog posts
+      await db.insert(blogs).values([
+        {
+          country: 'USA',
+          date: today,
+          title: 'Wall Street\'s Golden Hour: Tech Stocks Surge',
+          excerpt: 'A comprehensive analysis of today\'s market movements across the technology sector.',
+          author: 'Chief Market Analyst',
+          content: 'American markets show remarkable resilience as technology stocks continue their upward trajectory. Today\'s session saw significant gains across major indices...'
+        },
+        {
+          country: 'India',
+          date: today,
+          title: 'The Eastern Tiger Roars: NSE Reaches New Heights',
+          excerpt: 'Indian markets break records as economic growth accelerates.',
+          author: 'Senior Investment Strategist',
+          content: 'India\'s stock markets have reached unprecedented levels today, with both NIFTY and SENSEX showing strong bullish momentum. The market sentiment reflects the nation\'s robust economic growth...'
+        },
+        {
+          country: 'Japan',
+          date: today,
+          title: 'Tokyo\'s Rising Sun: Nikkei Index Breaks Records',
+          excerpt: 'Japanese markets experience a historic rally.',
+          author: 'Asia-Pacific Market Specialist',
+          content: 'Japan\'s financial markets are experiencing a remarkable turnaround as international investors return to the Tokyo exchange. The Nikkei index has reached new heights...'
+        },
+        {
+          country: 'Crypto',
+          date: today,
+          title: 'Digital Gold Shines: Bitcoin Reaches New Milestone',
+          excerpt: 'Cryptocurrency markets surge as institutional adoption accelerates.',
+          author: 'Blockchain Analyst',
+          content: 'The cryptocurrency market has entered a new phase of maturity today, with Bitcoin achieving significant price appreciation and showing strong institutional demand...'
+        }
+      ]);
+
       console.log("Data seeded.");
     }
   }

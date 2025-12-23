@@ -32,9 +32,21 @@ export const cryptoPrices = pgTable("crypto_prices", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const blogs = pgTable("blogs", {
+  id: serial("id").primaryKey(),
+  country: text("country").notNull(), // 'USA', 'India', 'Japan', 'Crypto'
+  date: text("date").notNull(), // YYYY-MM-DD
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  excerpt: text("excerpt").notNull(),
+  author: text("author").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertMarketNewsSchema = createInsertSchema(marketNews).omit({ id: true, createdAt: true });
 export const insertMarketIndicesSchema = createInsertSchema(marketIndices).omit({ id: true, updatedAt: true });
 export const insertCryptoPricesSchema = createInsertSchema(cryptoPrices).omit({ id: true, updatedAt: true });
+export const insertBlogsSchema = createInsertSchema(blogs).omit({ id: true, createdAt: true });
 
 export type MarketNews = typeof marketNews.$inferSelect;
 export type InsertMarketNews = z.infer<typeof insertMarketNewsSchema>;
@@ -42,3 +54,5 @@ export type MarketIndex = typeof marketIndices.$inferSelect;
 export type InsertMarketIndex = z.infer<typeof insertMarketIndicesSchema>;
 export type CryptoPrice = typeof cryptoPrices.$inferSelect;
 export type InsertCryptoPrice = z.infer<typeof insertCryptoPricesSchema>;
+export type Blog = typeof blogs.$inferSelect;
+export type InsertBlog = z.infer<typeof insertBlogsSchema>;
