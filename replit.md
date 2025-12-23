@@ -55,8 +55,12 @@ Preferred communication style: Simple, everyday language.
 - **connect-pg-simple**: Session storage for Express sessions
 
 ### External APIs
-- **Finnhub**: Real-time USA stock market data (requires API key)
+- **Finnhub**: Real-time USA stock market data (requires API key - FINNHUB_API_KEY)
 - **NSE API**: Free Indian stock market data (no authentication required)
+  - Stock quotes: https://nse-api-sand.vercel.app/stock/list
+  - Market indices: https://nse-api-sand.vercel.app/index
+- **CoinGecko**: Free crypto market data (no authentication required)
+  - Markets endpoint: https://api.coingecko.com/api/v3/coins/markets (returns top 100 cryptos with 24h price changes)
 
 ### UI Component Libraries
 - **Radix UI**: Headless component primitives (dialogs, dropdowns, tooltips, etc.)

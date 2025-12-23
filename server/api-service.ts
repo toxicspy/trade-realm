@@ -134,6 +134,46 @@ export async function fetchJapanIndices(): Promise<MarketIndex[]> {
   return [];
 }
 
+interface CoinGeckoMarket {
+  name: string;
+  symbol: string;
+  current_price: number;
+  price_change_percentage_24h: number;
+  market_cap: number | null;
+}
+
+export async function fetchCoinGeckoCryptos() {
+  try {
+    const response = await fetch(
+      "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=100&price_change_percentage=24h"
+    );
+    
+    if (!response.ok) {
+      console.error(`CoinGecko API error: ${response.status}`);
+      return [];
+    }
+
+    const data: CoinGeckoMarket[] = await response.json();
+    
+    if (!Array.isArray(data)) {
+      console.error("Invalid CoinGecko API response format");
+      return [];
+    }
+
+    return data.map((coin: CoinGeckoMarket) => ({
+      id: Math.random(),
+      symbol: coin.symbol.toUpperCase(),
+      name: coin.name,
+      price: coin.current_price.toFixed(2),
+      change24h: (coin.price_change_percentage_24h >= 0 ? "+" : "") + coin.price_change_percentage_24h.toFixed(2) + "%",
+      updatedAt: new Date(),
+    }));
+  } catch (error) {
+    console.error("Failed to fetch crypto prices from CoinGecko:", error);
+    return [];
+  }
+}
+
 interface NSEIndexData {
   name: string;
   last: number;
