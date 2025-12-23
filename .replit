@@ -40,3 +40,9 @@ waitForPort = 5000
 
 [agent]
 expertMode = true
+
+[userenv]
+
+[userenv.shared]
+FINNHUB_API_KEY = "d54kta1r01qojbifrmb0d54kta1r01qojbifrmbg"
+ALPHA_VANTAGE_API_KEY = "3GA7YW4W7HIIC9LI"
