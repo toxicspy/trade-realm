@@ -11,6 +11,11 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
+import { fetchUSAIndices, fetchIndiaIndices, fetchJapanIndices } from "./api-service";
+
+// In-memory cache for API data
+const apiCache: Record<string, { data: MarketIndex[]; timestamp: number }> = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export interface IStorage {
   getMarketNews(region?: string, date?: string): Promise<MarketNews[]>;
@@ -38,6 +43,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMarketIndices(region?: string): Promise<MarketIndex[]> {
+    // Fetch from real APIs for USA, India, and Japan
+    if (region && ["USA", "India", "Japan"].includes(region)) {
+      const cacheKey = `indices_${region}`;
+      const now = Date.now();
+      
+      // Check cache
+      if (apiCache[cacheKey] && now - apiCache[cacheKey].timestamp < CACHE_TTL) {
+        return apiCache[cacheKey].data;
+      }
+
+      try {
+        let data: MarketIndex[] = [];
+        if (region === "USA") {
+          data = await fetchUSAIndices();
+        } else if (region === "India") {
+          data = await fetchIndiaIndices();
+        } else if (region === "Japan") {
+          data = await fetchJapanIndices();
+        }
+        
+        // Cache the results
+        apiCache[cacheKey] = { data, timestamp: now };
+        return data;
+      } catch (error) {
+        console.error(`Failed to fetch ${region} indices:`, error);
+        // Fall back to empty array instead of DB data
+        return [];
+      }
+    }
+
+    // For Crypto and other regions, use database
     if (region) {
       return await db.select().from(marketIndices).where(eq(marketIndices.region, region));
     }
