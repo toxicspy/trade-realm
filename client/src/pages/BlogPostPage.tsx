@@ -1,5 +1,5 @@
 import { useParams, Link, useSearch } from "wouter";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, User, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format, parseISO, isValid } from "date-fns";
 import { blogDatabase } from "../../../data/blogs";
+import { MobileScrollableDatePicker } from "@/components/MobileScrollableDatePicker";
 
 // Map lowercase country names to display names
 const countryMap: { [key: string]: string } = {
@@ -38,46 +39,85 @@ export default function BlogPostPage() {
   const searchParams = new URLSearchParams(search);
   const dateStr = searchParams.get("date");
   const dateInputRef = useRef<HTMLInputElement>(null);
+  
+  // Mobile state
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobilePicker, setShowMobilePicker] = useState(false);
 
-  // Aggressive date picker trigger for all devices/browsers
+  // Detect mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      const isTouchDevice = () => {
+        return (
+          (typeof window !== "undefined" &&
+            ("ontouchstart" in window ||
+              navigator.maxTouchPoints > 0 ||
+              (navigator as any).msMaxTouchPoints > 0)) ||
+          window.matchMedia("(hover: none)").matches
+        );
+      };
+      setIsMobile(window.innerWidth < 768 && isTouchDevice());
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Date picker trigger - mobile shows custom picker, desktop shows native calendar
   const triggerDatePicker = (e: React.MouseEvent | React.TouchEvent | any) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!dateInputRef.current) return;
-    
-    const input = dateInputRef.current;
-    
-    // Ensure input is not readonly
-    if (input.hasAttribute("readonly")) {
-      input.removeAttribute("readonly");
-    }
-    
-    // Aggressive focus and show picker sequence
-    input.focus();
-    input.click();
-    
-    // Try showPicker for modern browsers
-    if ("showPicker" in HTMLInputElement.prototype && typeof (input as any).showPicker === "function") {
-      try {
-        setTimeout(() => {
-          (input as any).showPicker();
-        }, 50);
-      } catch (err) {
-        console.warn("showPicker failed:", err);
+    if (isMobile) {
+      // Mobile: show scrollable date picker
+      setShowMobilePicker(true);
+    } else {
+      // Desktop: use native calendar
+      if (!dateInputRef.current) return;
+      
+      const input = dateInputRef.current;
+      
+      // Ensure input is not readonly
+      if (input.hasAttribute("readonly")) {
+        input.removeAttribute("readonly");
+      }
+      
+      // Trigger native date picker
+      input.focus();
+      input.click();
+      
+      // Try showPicker for modern browsers
+      if ("showPicker" in HTMLInputElement.prototype && typeof (input as any).showPicker === "function") {
+        try {
+          setTimeout(() => {
+            (input as any).showPicker();
+          }, 50);
+        } catch (err) {
+          console.warn("showPicker failed:", err);
+        }
       }
     }
   };
 
-  // Force critical styles on date input for mobile touch compatibility
+  // Handle date selection from mobile picker
+  const handleMobileDateSelect = (dateStr: string) => {
+    if (country) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("date", dateStr);
+      window.history.pushState(null, "", url.toString());
+    }
+  };
+
+  // Force critical styles on date input for desktop compatibility
   useEffect(() => {
-    if (dateInputRef.current) {
+    if (dateInputRef.current && !isMobile) {
       const input = dateInputRef.current;
       input.style.setProperty("pointer-events", "auto", "important");
       input.style.setProperty("position", "relative", "important");
       input.style.setProperty("z-index", "9999", "important");
     }
-  }, []);
+  }, [isMobile]);
 
   // Get display name for country
   const displayCountry = country
@@ -123,6 +163,16 @@ export default function BlogPostPage() {
   };
 
   const isLoading = false;
+
+  // Prevent body scroll when mobile picker is open
+  useEffect(() => {
+    if (showMobilePicker) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [showMobilePicker]);
 
   return (
     <div className="min-h-screen bg-background font-sans">
@@ -183,24 +233,26 @@ export default function BlogPostPage() {
               </h1>
 
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-muted-foreground" style={{ pointerEvents: "auto" } as any}>
-                <input
-                  ref={dateInputRef}
-                  id="date-picker-input"
-                  type="date"
-                  onChange={handleDateChange}
+                <div
+                  className="cursor-pointer text-primary font-semibold text-xs sm:text-sm bg-transparent"
                   onClick={triggerDatePicker}
                   onTouchStart={(e) => {
                     (e as any).preventDefault?.();
                     triggerDatePicker(e);
                   }}
-                  className="cursor-pointer text-primary font-semibold text-xs sm:text-sm bg-transparent border-none p-0 focus:outline-none"
-                  style={{ 
-                    pointerEvents: "auto" as any,
-                    position: "relative" as any,
-                    zIndex: 9999,
-                    colorScheme: "dark"
-                  }}
+                  style={{ pointerEvents: "auto" } as any}
+                  data-testid="date-display"
+                >
+                  {displayDate}
+                </div>
+                <input
+                  ref={dateInputRef}
+                  id="date-picker-input"
+                  type="date"
+                  onChange={handleDateChange}
+                  style={{ display: "none" }}
                   aria-label="Select date"
+                  data-testid="input-date"
                 />
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
@@ -272,6 +324,15 @@ export default function BlogPostPage() {
       </main>
 
       <Footer />
+
+      {/* Mobile Date Picker Modal */}
+      <MobileScrollableDatePicker
+        isOpen={showMobilePicker}
+        onClose={() => setShowMobilePicker(false)}
+        onDateSelect={handleMobileDateSelect}
+        initialDate={dateStr || new Date().toISOString().split('T')[0]}
+        data-testid="mobile-date-picker"
+      />
     </div>
   );
 }
