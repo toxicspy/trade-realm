@@ -1,5 +1,5 @@
 import { useParams, Link, useSearch } from "wouter";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -68,6 +68,16 @@ export default function BlogPostPage() {
       }
     }
   };
+
+  // Force critical styles on date input for mobile touch compatibility
+  useEffect(() => {
+    if (dateInputRef.current) {
+      const input = dateInputRef.current;
+      input.style.setProperty("pointer-events", "auto", "important");
+      input.style.setProperty("position", "relative", "important");
+      input.style.setProperty("z-index", "9999", "important");
+    }
+  }, []);
 
   // Get display name for country
   const displayCountry = country
@@ -172,31 +182,26 @@ export default function BlogPostPage() {
                 {blog.title}
               </h1>
 
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-muted-foreground">
-                <div
-                  className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:text-primary transition-colors text-xs sm:text-sm pointer-events-auto relative"
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-muted-foreground" style={{ pointerEvents: "auto" } as any}>
+                <input
+                  ref={dateInputRef}
+                  id="date-picker-input"
+                  type="date"
+                  onChange={handleDateChange}
                   onClick={triggerDatePicker}
                   onTouchStart={(e) => {
                     (e as any).preventDefault?.();
                     triggerDatePicker(e);
                   }}
-                >
-                  <span className="break-words pointer-events-auto text-primary font-semibold">{displayDate}</span>
-                  <input
-                    ref={dateInputRef}
-                    id="date-picker-input"
-                    type="date"
-                    onChange={handleDateChange}
-                    onClick={triggerDatePicker}
-                    onTouchStart={(e) => {
-                      (e as any).preventDefault?.();
-                      triggerDatePicker(e);
-                    }}
-                    className="absolute inset-0 w-full h-full cursor-pointer opacity-0 pointer-events-auto"
-                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-                    aria-label="Select date"
-                  />
-                </div>
+                  className="cursor-pointer text-primary font-semibold text-xs sm:text-sm bg-transparent border-none p-0 focus:outline-none"
+                  style={{ 
+                    pointerEvents: "auto" as any,
+                    position: "relative" as any,
+                    zIndex: 9999,
+                    colorScheme: "dark"
+                  }}
+                  aria-label="Select date"
+                />
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                   <span className="break-words">{blog.author}</span>
