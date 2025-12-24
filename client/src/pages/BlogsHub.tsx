@@ -87,7 +87,7 @@ export default function BlogsHub() {
                   className={cn(
                     "p-6 rounded-lg border-2 transition-all duration-300 text-center cursor-pointer",
                     selectedCountry === country.slug
-                      ? "bg-primary/20 border-primary text-primary shadow-[0_0_20px_rgba(255,215,0,0.2)]"
+                      ? "bg-primary/20 border-primary text-primary shadow-[0_0_15px_rgba(255,215,0,0.1)]"
                       : "bg-white/5 border-white/10 text-muted-foreground hover:border-primary/50 hover:text-primary"
                   )}
                 >

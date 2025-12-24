@@ -12,21 +12,21 @@ const countryMap: { [key: string]: string } = {
   usa: "USA",
   india: "India",
   japan: "Japan",
-  crypto: "Crypto"
+  crypto: "Crypto",
 };
 
 // Helper function to get a random blog from latest entries for a country
 function getRandomLatestBlog(country: string, blogs: typeof blogDatabase) {
   // Filter blogs by country
-  const countryBlogs = blogs.filter(b => b.country === country);
-  
+  const countryBlogs = blogs.filter((b) => b.country === country);
+
   if (countryBlogs.length === 0) return null;
-  
+
   // Sort by date descending (newest first)
   const sorted = [...countryBlogs].sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
-  
+
   // Pick a random blog from the sorted list
   return sorted[Math.floor(Math.random() * sorted.length)];
 }
@@ -36,30 +36,32 @@ export default function BlogPostPage() {
   const search = useSearch();
   const searchParams = new URLSearchParams(search);
   const dateStr = searchParams.get("date");
-  
+
   // Get display name for country
-  const displayCountry = country ? countryMap[country.toLowerCase()] || country : "";
-  
+  const displayCountry = country
+    ? countryMap[country.toLowerCase()] || country
+    : "";
+
   // Determine if we're using fallback mode (no date selected)
   const isUsingFallback = !dateStr;
-  
+
   // Parse date - use today if not provided
-  let displayDate = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  let displayDate = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
-  
+
   if (dateStr && isValid(parseISO(dateStr))) {
     const parsedDate = parseISO(dateStr);
     displayDate = format(parsedDate, "MMMM dd, yyyy");
   }
-  
+
   // Find matching blog from test data
-  let blog: typeof blogDatabase[0] | null | undefined = blogDatabase.find(
-    b => b.country === displayCountry && b.date === dateStr
+  let blog: (typeof blogDatabase)[0] | null | undefined = blogDatabase.find(
+    (b) => b.country === displayCountry && b.date === dateStr,
   );
-  
+
   // If no date selected, show random latest blog for the country
   if (isUsingFallback && displayCountry) {
     blog = getRandomLatestBlog(displayCountry, blogDatabase) || undefined;
@@ -68,13 +70,13 @@ export default function BlogPostPage() {
       displayDate = format(parseISO(blog.date), "MMMM dd, yyyy");
     }
   }
-  
+
   const isLoading = false;
 
   return (
     <div className="min-h-screen bg-background font-sans">
       <Navigation />
-      
+
       <main className="container mx-auto px-4 md:px-6 pt-32 pb-20">
         {/* Back Button */}
         <motion.div
@@ -85,7 +87,9 @@ export default function BlogPostPage() {
           <Link href="/blogs">
             <div className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors cursor-pointer w-fit">
               <ArrowLeft className="w-4 h-4" />
-              <span className="font-heading text-sm uppercase tracking-wider">Back to Archives</span>
+              <span className="font-heading text-sm uppercase tracking-wider">
+                Back to Archives
+              </span>
             </div>
           </Link>
         </motion.div>
@@ -111,7 +115,7 @@ export default function BlogPostPage() {
                 </p>
               </div>
             )}
-            
+
             {/* Header */}
             <div className="mb-12 pb-8 border-b border-white/10">
               <div className="flex flex-wrap gap-3 mb-6">
@@ -120,7 +124,7 @@ export default function BlogPostPage() {
                   {displayCountry}
                 </div>
               </div>
-              
+
               <h1 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
                 {blog.title}
               </h1>
@@ -142,11 +146,12 @@ export default function BlogPostPage() {
               <p className="text-lg text-muted-foreground leading-relaxed mb-8">
                 {blog.excerpt}
               </p>
-              
+
               <div className="bg-white/5 border border-white/10 rounded-lg p-8 mb-8">
-                <p className="text-foreground leading-relaxed whitespace-pre-wrap">
-                  {blog.content}
-                </p>
+                <div
+                  className="text-foreground leading-relaxed space-y-6"
+                  dangerouslySetInnerHTML={{ __html: blog.content }}
+                />
               </div>
             </div>
 
@@ -174,14 +179,15 @@ export default function BlogPostPage() {
             <div className="mb-8 p-8 rounded-full bg-primary/10 border border-primary/30 w-fit mx-auto">
               <Calendar className="w-16 h-16 text-primary opacity-50" />
             </div>
-            
+
             <h2 className="text-3xl font-heading font-bold text-white mb-4">
               Content Not Yet Published
             </h2>
-            
+
             <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-              There is no trading analysis available for {displayCountry} on {displayDate}. 
-              Visit the archives to explore other dates and markets.
+              There is no trading analysis available for {displayCountry} on{" "}
+              {displayDate}. Visit the archives to explore other dates and
+              markets.
             </p>
 
             <Link href="/blogs">
