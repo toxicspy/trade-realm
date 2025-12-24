@@ -1,11 +1,11 @@
 import { useParams, Link, useSearch } from "wouter";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { useBlog } from "@/hooks/use-blogs";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, User, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format, parseISO, isValid } from "date-fns";
+import { blogDatabase } from "../../../data/blogs";
 
 // Map lowercase country names to display names
 const countryMap: { [key: string]: string } = {
@@ -36,7 +36,12 @@ export default function BlogPostPage() {
     displayDate = format(parsedDate, "MMMM dd, yyyy");
   }
   
-  const { data: blog, isLoading } = useBlog(displayCountry || "", dateStr || "");
+  // Find matching blog from test data
+  const blog = blogDatabase.find(
+    b => b.country === displayCountry && b.date === dateStr
+  );
+  
+  const isLoading = false;
 
   return (
     <div className="min-h-screen bg-background font-sans">
@@ -64,7 +69,7 @@ export default function BlogPostPage() {
               <p className="text-muted-foreground">Loading article...</p>
             </div>
           </div>
-        ) : blog ? (
+        ) : blog && displayCountry && dateStr ? (
           <motion.article
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
