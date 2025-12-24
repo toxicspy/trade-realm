@@ -181,15 +181,7 @@ export default function BlogPostPage() {
                     triggerDatePicker(e);
                   }}
                 >
-                  <Calendar 
-                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0 pointer-events-auto" 
-                    onClick={triggerDatePicker}
-                    onTouchStart={(e) => {
-                      (e as any).preventDefault?.();
-                      triggerDatePicker(e);
-                    }}
-                  />
-                  <span className="break-words pointer-events-auto">{displayDate}</span>
+                  <span className="break-words pointer-events-auto text-primary font-semibold">{displayDate}</span>
                   <input
                     ref={dateInputRef}
                     id="date-picker-input"
