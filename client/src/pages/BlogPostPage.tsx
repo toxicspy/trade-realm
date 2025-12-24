@@ -1,4 +1,5 @@
 import { useParams, Link, useSearch } from "wouter";
+import { useRef } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -36,6 +37,7 @@ export default function BlogPostPage() {
   const search = useSearch();
   const searchParams = new URLSearchParams(search);
   const dateStr = searchParams.get("date");
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   // Get display name for country
   const displayCountry = country
@@ -70,6 +72,15 @@ export default function BlogPostPage() {
       displayDate = format(parseISO(blog.date), "MMMM dd, yyyy");
     }
   }
+
+  // Handle date picker change
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value && country) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("date", e.target.value);
+      window.history.pushState(null, "", url.toString());
+    }
+  };
 
   const isLoading = false;
 
@@ -132,10 +143,17 @@ export default function BlogPostPage() {
               </h1>
 
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-muted-foreground">
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:text-primary transition-colors">
                   <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                   <span className="break-words">{displayDate}</span>
-                </div>
+                  <input
+                    ref={dateInputRef}
+                    type="date"
+                    onChange={handleDateChange}
+                    className="sr-only"
+                    aria-label="Select date"
+                  />
+                </label>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                   <span className="break-words">{blog.author}</span>
