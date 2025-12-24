@@ -5,14 +5,38 @@ import { useBlog } from "@/hooks/use-blogs";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, User, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { format, parseISO, isValid } from "date-fns";
+
+// Map lowercase country names to display names
+const countryMap: { [key: string]: string } = {
+  usa: "USA",
+  india: "India",
+  japan: "Japan",
+  crypto: "Crypto"
+};
 
 export default function BlogPostPage() {
   const { country } = useParams();
   const search = useSearch();
   const searchParams = new URLSearchParams(search);
-  const date = searchParams.get("date") || "";
+  const dateStr = searchParams.get("date");
   
-  const { data: blog, isLoading } = useBlog(country || "", date);
+  // Get display name for country
+  const displayCountry = country ? countryMap[country.toLowerCase()] || country : "";
+  
+  // Parse date - use today if not provided
+  let displayDate = new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  if (dateStr && isValid(parseISO(dateStr))) {
+    const parsedDate = parseISO(dateStr);
+    displayDate = format(parsedDate, "MMMM dd, yyyy");
+  }
+  
+  const { data: blog, isLoading } = useBlog(displayCountry || "", dateStr || "");
 
   return (
     <div className="min-h-screen bg-background font-sans">
@@ -51,7 +75,7 @@ export default function BlogPostPage() {
               <div className="flex flex-wrap gap-3 mb-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 rounded-full text-xs font-heading uppercase tracking-wider text-primary">
                   <Globe className="w-3 h-3" />
-                  {blog.country}
+                  {displayCountry}
                 </div>
               </div>
               
@@ -62,11 +86,7 @@ export default function BlogPostPage() {
               <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-primary" />
-                  {new Date(blog.date).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
+                  {displayDate}
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-primary" />
@@ -118,7 +138,7 @@ export default function BlogPostPage() {
             </h2>
             
             <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-              There is no trading analysis available for {country} on {date}. 
+              There is no trading analysis available for {displayCountry} on {displayDate}. 
               Visit the archives to explore other dates and markets.
             </p>
 

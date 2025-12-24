@@ -171,6 +171,7 @@ export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMarketOpen, setIsMarketOpen] = useState(false);
+  const [isBlogsOpen, setIsBlogsOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -237,17 +238,24 @@ export function Navigation() {
     setSearchResults([]);
   };
 
-  const navLinks = [
+  const marketNavLinks = [
     { name: "USA", href: "/market/USA" },
     { name: "India", href: "/market/India" },
     { name: "Japan", href: "/market/Japan" },
     { name: "Crypto", href: "/market/Crypto" },
   ];
 
+  const blogsNavLinks = [
+    { name: "USA", href: "/blogs/usa" },
+    { name: "India", href: "/blogs/india" },
+    { name: "Japan", href: "/blogs/japan" },
+    { name: "Crypto", href: "/blogs/crypto" },
+  ];
+
   const mainNavLinks = [
     { name: "Home", href: "/" },
     { name: "Markets", href: "/market/USA", isDropdown: true },
-    { name: "Blogs", href: "/blogs" },
+    { name: "Blogs", href: "/blogs", isDropdown: true },
   ];
 
   return (
@@ -306,7 +314,7 @@ export function Navigation() {
                   className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-48"
                 >
                   <div className="bg-[#0f0f13] border border-primary/20 rounded-lg shadow-2xl overflow-hidden p-1">
-                    {navLinks.map((link) => (
+                    {marketNavLinks.map((link) => (
                       <Link key={link.name} href={link.href}>
                         <div className="block px-4 py-3 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors rounded-md cursor-pointer font-medium">
                           {link.name}
@@ -319,11 +327,37 @@ export function Navigation() {
             </AnimatePresence>
           </div>
 
-          <Link href="/blogs">
-            <div className={cn("nav-link cursor-pointer", location === "/blogs" && "text-primary after:w-full")}>
-              Blogs
-            </div>
-          </Link>
+          <div 
+            className="relative group"
+            onMouseEnter={() => setIsBlogsOpen(true)}
+            onMouseLeave={() => setIsBlogsOpen(false)}
+          >
+            <button className={cn("nav-link flex items-center gap-1", location.startsWith("/blogs") && "text-primary")}>
+              Blogs <ChevronDown className="w-3 h-3" />
+            </button>
+            
+            <AnimatePresence>
+              {isBlogsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-48"
+                >
+                  <div className="bg-[#0f0f13] border border-primary/20 rounded-lg shadow-2xl overflow-hidden p-1">
+                    {blogsNavLinks.map((link) => (
+                      <Link key={link.name} href={link.href}>
+                        <div className="block px-4 py-3 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors rounded-md cursor-pointer font-medium">
+                          {link.name}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <div className="h-4 w-[1px] bg-white/10" />
 
@@ -412,24 +446,32 @@ export function Navigation() {
                   Home
                 </div>
               </Link>
-              {navLinks.map(link => (
-                <Link key={link.name} href={link.href}>
-                  <div 
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-muted-foreground hover:text-primary py-2 pl-4 border-l border-white/10 hover:border-primary transition-all"
-                  >
-                    {link.name} Markets
-                  </div>
-                </Link>
-              ))}
-              <Link href="/blogs">
-                <div 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-muted-foreground hover:text-primary py-2 pl-4 border-l border-white/10 hover:border-primary transition-all"
-                >
-                  Blogs
-                </div>
-              </Link>
+              <div className="py-2">
+                <div className="text-muted-foreground text-xs uppercase tracking-widest mb-2 px-4">Markets</div>
+                {marketNavLinks.map(link => (
+                  <Link key={link.name} href={link.href}>
+                    <div 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-muted-foreground hover:text-primary py-2 pl-4 border-l border-white/10 hover:border-primary transition-all"
+                    >
+                      {link.name}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <div className="py-2">
+                <div className="text-muted-foreground text-xs uppercase tracking-widest mb-2 px-4">Blogs</div>
+                {blogsNavLinks.map(link => (
+                  <Link key={link.name} href={link.href}>
+                    <div 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-muted-foreground hover:text-primary py-2 pl-4 border-l border-white/10 hover:border-primary transition-all"
+                    >
+                      {link.name}
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}

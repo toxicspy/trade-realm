@@ -9,24 +9,24 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const countries = [
-  { name: "USA", slug: "USA", icon: "🇺🇸" },
-  { name: "India", slug: "India", icon: "🇮🇳" },
-  { name: "Japan", slug: "Japan", icon: "🇯🇵" },
-  { name: "Crypto", slug: "Crypto", icon: "₿" },
+  { name: "USA", slug: "usa", icon: "🇺🇸" },
+  { name: "India", slug: "india", icon: "🇮🇳" },
+  { name: "Japan", slug: "japan", icon: "🇯🇵" },
+  { name: "Crypto", slug: "crypto", icon: "₿" },
 ];
 
 export default function BlogsHub() {
-  const [selectedCountry, setSelectedCountry] = useState("USA");
+  const [selectedCountry, setSelectedCountry] = useState("usa");
   const search = useSearch();
   const searchParams = new URLSearchParams(search);
   
-  // Read date from URL, no fallback to today
+  // Read date from URL, use today if not provided
   const selectedDateStr = searchParams.get("date");
   const selectedDate = useMemo(() => {
     if (selectedDateStr && isValid(parseISO(selectedDateStr))) {
       return parseISO(selectedDateStr);
     }
-    return null;
+    return new Date(); // Use today by default for BlogsHub
   }, [selectedDateStr]);
 
   const dateStr = selectedDate ? format(selectedDate, "yyyy-MM-dd") : null;
@@ -80,21 +80,21 @@ export default function BlogsHub() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {countries.map((country) => (
-              <motion.button
-                key={country.slug}
-                onClick={() => setSelectedCountry(country.slug)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "p-6 rounded-lg border-2 transition-all duration-300 text-center",
-                  selectedCountry === country.slug
-                    ? "bg-primary/20 border-primary text-primary shadow-[0_0_20px_rgba(255,215,0,0.2)]"
-                    : "bg-white/5 border-white/10 text-muted-foreground hover:border-primary/50 hover:text-primary"
-                )}
-              >
-                <div className="text-3xl mb-2">{country.icon}</div>
-                <div className="font-heading font-semibold text-sm">{country.name}</div>
-              </motion.button>
+              <Link key={country.slug} href={`/blogs/${country.slug}?date=${dateStr}`}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "p-6 rounded-lg border-2 transition-all duration-300 text-center cursor-pointer",
+                    selectedCountry === country.slug
+                      ? "bg-primary/20 border-primary text-primary shadow-[0_0_20px_rgba(255,215,0,0.2)]"
+                      : "bg-white/5 border-white/10 text-muted-foreground hover:border-primary/50 hover:text-primary"
+                  )}
+                >
+                  <div className="text-3xl mb-2">{country.icon}</div>
+                  <div className="font-heading font-semibold text-sm">{country.name}</div>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>
@@ -105,53 +105,29 @@ export default function BlogsHub() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          {selectedDate ? (
-            <Link href={`/blogs/${selectedCountry}?date=${dateStr}`}>
-              <div className="p-8 rounded-xl border border-primary/20 bg-black/40 backdrop-blur-sm hover:bg-primary/10 transition-all duration-300 cursor-pointer group">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="text-sm font-heading uppercase tracking-wider text-primary mb-2">
-                      {selectedCountry} Market
-                    </div>
-                    <h3 className="text-2xl font-heading font-bold text-white group-hover:text-primary transition-colors">
-                      {format(selectedDate, "MMMM dd, yyyy")}
-                    </h3>
-                  </div>
-                  <div className="text-primary/50 group-hover:text-primary transition-colors">
-                    <Globe className="w-6 h-6" />
-                  </div>
-                </div>
-                <p className="text-muted-foreground mb-6">
-                  View market analysis and trading insights for {selectedCountry}.
-                </p>
-                <Button variant="outline" className="group-hover:bg-primary/20 transition-colors">
-                  Read Article →
-                </Button>
-              </div>
-            </Link>
-          ) : (
-            <div className="p-8 rounded-xl border border-primary/20 bg-black/40 backdrop-blur-sm opacity-50 cursor-not-allowed">
+          <Link href={`/blogs/${selectedCountry}?date=${dateStr}`}>
+            <div className="p-8 rounded-xl border border-primary/20 bg-black/40 backdrop-blur-sm hover:bg-primary/10 transition-all duration-300 cursor-pointer group">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <div className="text-sm font-heading uppercase tracking-wider text-primary mb-2">
-                    {selectedCountry} Market
+                    {countries.find(c => c.slug === selectedCountry)?.name} Market
                   </div>
-                  <h3 className="text-2xl font-heading font-bold text-white">
-                    Select a date
+                  <h3 className="text-2xl font-heading font-bold text-white group-hover:text-primary transition-colors">
+                    {format(selectedDate, "MMMM dd, yyyy")}
                   </h3>
                 </div>
-                <div className="text-primary/50">
+                <div className="text-primary/50 group-hover:text-primary transition-colors">
                   <Globe className="w-6 h-6" />
                 </div>
               </div>
               <p className="text-muted-foreground mb-6">
-                Select a date above to view market analysis and trading insights.
+                View market analysis and trading insights for {countries.find(c => c.slug === selectedCountry)?.name}.
               </p>
-              <Button variant="outline" disabled className="opacity-50">
+              <Button variant="outline" className="group-hover:bg-primary/20 transition-colors">
                 Read Article →
               </Button>
             </div>
-          )}
+          </Link>
         </motion.div>
 
         {/* Archive Info */}
