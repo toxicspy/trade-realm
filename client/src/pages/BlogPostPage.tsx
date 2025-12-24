@@ -77,17 +77,17 @@ export default function BlogPostPage() {
     <div className="min-h-screen bg-background font-sans">
       <Navigation />
 
-      <main className="container mx-auto px-4 md:px-6 pt-32 pb-20">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20">
         {/* Back Button */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <Link href="/blogs">
             <div className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors cursor-pointer w-fit">
-              <ArrowLeft className="w-4 h-4" />
-              <span className="font-heading text-sm uppercase tracking-wider">
+              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="font-heading text-xs sm:text-sm uppercase tracking-wider">
                 Back to Archives
               </span>
             </div>
@@ -95,10 +95,12 @@ export default function BlogPostPage() {
         </motion.div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-16 sm:py-20">
             <div className="text-center">
-              <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading article...</p>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-3 sm:mb-4" />
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Loading article...
+              </p>
             </div>
           </div>
         ) : blog && displayCountry ? (
@@ -109,47 +111,47 @@ export default function BlogPostPage() {
           >
             {/* Fallback indicator */}
             {isUsingFallback && (
-              <div className="mb-6 p-4 rounded-lg bg-primary/5 border border-primary/20">
-                <p className="text-sm text-muted-foreground italic">
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <p className="text-xs sm:text-sm text-muted-foreground italic">
                   Showing latest published market insight
                 </p>
               </div>
             )}
 
             {/* Header */}
-            <div className="mb-12 pb-8 border-b border-white/10">
-              <div className="flex flex-wrap gap-3 mb-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 rounded-full text-xs font-heading uppercase tracking-wider text-primary">
-                  <Globe className="w-3 h-3" />
+            <div className="mb-8 sm:mb-10 md:mb-12 pb-6 sm:pb-8 border-b border-white/10">
+              <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 bg-primary/10 border border-primary/30 rounded-full text-xs font-heading uppercase tracking-wider text-primary">
+                  <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   {displayCountry}
                 </div>
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-white mb-4 sm:mb-6 leading-tight">
                 {blog.title}
               </h1>
 
-              <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  {displayDate}
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                  <span className="break-words">{displayDate}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-primary" />
-                  {blog.author}
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                  <span className="break-words">{blog.author}</span>
                 </div>
               </div>
             </div>
 
             {/* Content */}
-            <div className="prose prose-invert max-w-none mb-12">
-              <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+            <div className="prose prose-invert max-w-none mb-8 sm:mb-10 md:mb-12">
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-6 sm:mb-8">
                 {blog.excerpt}
               </p>
 
-              <div className="bg-white/5 border border-white/10 rounded-lg p-8 mb-8">
+              <div className="bg-white/5 border border-white/10 rounded-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
                 <div
-                  className="text-foreground leading-relaxed space-y-6"
+                  className="text-sm sm:text-base text-foreground leading-relaxed space-y-4 sm:space-y-6 break-words"
                   dangerouslySetInnerHTML={{ __html: blog.content }}
                 />
               </div>
@@ -160,11 +162,14 @@ export default function BlogPostPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="flex gap-4 pt-8 border-t border-white/10"
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-white/10"
             >
-              <Link href="/blogs">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" />
+              <Link href="/blogs" className="w-full sm:w-auto">
+                <Button 
+                  variant="outline" 
+                  className="flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto text-xs sm:text-sm"
+                >
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                   Back to Archives
                 </Button>
               </Link>
@@ -174,25 +179,25 @@ export default function BlogPostPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl mx-auto text-center py-20"
+            className="max-w-3xl mx-auto text-center py-12 sm:py-16 md:py-20"
           >
-            <div className="mb-8 p-8 rounded-full bg-primary/10 border border-primary/30 w-fit mx-auto">
-              <Calendar className="w-16 h-16 text-primary opacity-50" />
+            <div className="mb-6 sm:mb-8 p-4 sm:p-6 md:p-8 rounded-full bg-primary/10 border border-primary/30 w-fit mx-auto">
+              <Calendar className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-primary opacity-50" />
             </div>
 
-            <h2 className="text-3xl font-heading font-bold text-white mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-white mb-3 sm:mb-4 px-2">
               Content Not Yet Published
             </h2>
 
-            <p className="text-muted-foreground max-w-xl mx-auto mb-8">
+            <p className="text-xs sm:text-sm md:text-base text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-8 px-3">
               There is no trading analysis available for {displayCountry} on{" "}
               {displayDate}. Visit the archives to explore other dates and
               markets.
             </p>
 
             <Link href="/blogs">
-              <Button className="flex items-center gap-2 mx-auto">
-                <ArrowLeft className="w-4 h-4" />
+              <Button className="flex items-center justify-center gap-2 mx-auto text-xs sm:text-sm">
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                 Return to Archives
               </Button>
             </Link>
