@@ -15,6 +15,22 @@ const countryMap: { [key: string]: string } = {
   crypto: "Crypto"
 };
 
+// Helper function to get a random blog from latest entries for a country
+function getRandomLatestBlog(country: string, blogs: typeof blogDatabase) {
+  // Filter blogs by country
+  const countryBlogs = blogs.filter(b => b.country === country);
+  
+  if (countryBlogs.length === 0) return null;
+  
+  // Sort by date descending (newest first)
+  const sorted = [...countryBlogs].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+  
+  // Pick a random blog from the sorted list
+  return sorted[Math.floor(Math.random() * sorted.length)];
+}
+
 export default function BlogPostPage() {
   const { country } = useParams();
   const search = useSearch();
@@ -23,6 +39,9 @@ export default function BlogPostPage() {
   
   // Get display name for country
   const displayCountry = country ? countryMap[country.toLowerCase()] || country : "";
+  
+  // Determine if we're using fallback mode (no date selected)
+  const isUsingFallback = !dateStr;
   
   // Parse date - use today if not provided
   let displayDate = new Date().toLocaleDateString('en-US', { 
@@ -37,9 +56,18 @@ export default function BlogPostPage() {
   }
   
   // Find matching blog from test data
-  const blog = blogDatabase.find(
+  let blog: typeof blogDatabase[0] | null | undefined = blogDatabase.find(
     b => b.country === displayCountry && b.date === dateStr
   );
+  
+  // If no date selected, show random latest blog for the country
+  if (isUsingFallback && displayCountry) {
+    blog = getRandomLatestBlog(displayCountry, blogDatabase) || undefined;
+    // Update displayDate to show the blog's actual date
+    if (blog && blog.date && isValid(parseISO(blog.date))) {
+      displayDate = format(parseISO(blog.date), "MMMM dd, yyyy");
+    }
+  }
   
   const isLoading = false;
 
@@ -69,12 +97,21 @@ export default function BlogPostPage() {
               <p className="text-muted-foreground">Loading article...</p>
             </div>
           </div>
-        ) : blog && displayCountry && dateStr ? (
+        ) : blog && displayCountry ? (
           <motion.article
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto"
           >
+            {/* Fallback indicator */}
+            {isUsingFallback && (
+              <div className="mb-6 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <p className="text-sm text-muted-foreground italic">
+                  Showing latest published market insight
+                </p>
+              </div>
+            )}
+            
             {/* Header */}
             <div className="mb-12 pb-8 border-b border-white/10">
               <div className="flex flex-wrap gap-3 mb-6">
