@@ -39,25 +39,34 @@ export default function BlogPostPage() {
   const dateStr = searchParams.get("date");
   const dateInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle opening the date picker with fallbacks for all browsers/devices
-  const openDatePicker = (e: React.MouseEvent | React.TouchEvent) => {
+  // Aggressive date picker trigger for all devices/browsers
+  const triggerDatePicker = (e: React.MouseEvent | React.TouchEvent | any) => {
     e.preventDefault();
     e.stopPropagation();
+    
     if (!dateInputRef.current) return;
-
-    // Try showPicker first (modern browsers)
-    if ("showPicker" in HTMLInputElement.prototype) {
+    
+    const input = dateInputRef.current;
+    
+    // Ensure input is not readonly
+    if (input.hasAttribute("readonly")) {
+      input.removeAttribute("readonly");
+    }
+    
+    // Aggressive focus and show picker sequence
+    input.focus();
+    input.click();
+    
+    // Try showPicker for modern browsers
+    if ("showPicker" in HTMLInputElement.prototype && typeof (input as any).showPicker === "function") {
       try {
-        (dateInputRef.current as any).showPicker();
-        return;
+        setTimeout(() => {
+          (input as any).showPicker();
+        }, 50);
       } catch (err) {
-        console.log("showPicker not available, falling back...");
+        console.warn("showPicker failed:", err);
       }
     }
-
-    // Fallback: focus and click
-    dateInputRef.current.focus();
-    dateInputRef.current.click();
   };
 
   // Get display name for country
@@ -164,29 +173,38 @@ export default function BlogPostPage() {
               </h1>
 
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-muted-foreground">
-                <label
-                  htmlFor="date-picker-input"
-                  className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:text-primary transition-colors text-xs sm:text-sm"
-                  onClick={openDatePicker}
-                  onTouchStart={openDatePicker}
+                <div
+                  className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:text-primary transition-colors text-xs sm:text-sm pointer-events-auto relative"
+                  onClick={triggerDatePicker}
+                  onTouchStart={(e) => {
+                    (e as any).preventDefault?.();
+                    triggerDatePicker(e);
+                  }}
                 >
                   <Calendar 
                     className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0 pointer-events-auto" 
-                    onClick={openDatePicker}
-                    onTouchStart={openDatePicker}
+                    onClick={triggerDatePicker}
+                    onTouchStart={(e) => {
+                      (e as any).preventDefault?.();
+                      triggerDatePicker(e);
+                    }}
                   />
-                  <span className="break-words">{displayDate}</span>
+                  <span className="break-words pointer-events-auto">{displayDate}</span>
                   <input
                     ref={dateInputRef}
                     id="date-picker-input"
                     type="date"
                     onChange={handleDateChange}
-                    onClick={openDatePicker}
-                    onTouchStart={openDatePicker}
-                    className="sr-only"
+                    onClick={triggerDatePicker}
+                    onTouchStart={(e) => {
+                      (e as any).preventDefault?.();
+                      triggerDatePicker(e);
+                    }}
+                    className="absolute inset-0 w-full h-full cursor-pointer opacity-0 pointer-events-auto"
+                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
                     aria-label="Select date"
                   />
-                </label>
+                </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                   <span className="break-words">{blog.author}</span>
