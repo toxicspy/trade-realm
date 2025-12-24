@@ -143,7 +143,11 @@ export default function BlogPostPage() {
               </h1>
 
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-muted-foreground">
-                <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:text-primary transition-colors">
+                <button
+                  onClick={() => dateInputRef.current?.click()}
+                  className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:text-primary transition-colors bg-transparent border-none p-0 text-xs sm:text-sm"
+                  aria-label="Select date"
+                >
                   <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                   <span className="break-words">{displayDate}</span>
                   <input
@@ -153,7 +157,7 @@ export default function BlogPostPage() {
                     className="sr-only"
                     aria-label="Select date"
                   />
-                </label>
+                </button>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                   <span className="break-words">{blog.author}</span>
