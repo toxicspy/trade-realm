@@ -1,4 +1,5 @@
 import { useParams, Link, useSearch } from "wouter";
+import { useRef } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -36,6 +37,28 @@ export default function BlogPostPage() {
   const search = useSearch();
   const searchParams = new URLSearchParams(search);
   const dateStr = searchParams.get("date");
+  const dateInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle opening the date picker with fallbacks for all browsers/devices
+  const openDatePicker = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!dateInputRef.current) return;
+
+    // Try showPicker first (modern browsers)
+    if ("showPicker" in HTMLInputElement.prototype) {
+      try {
+        (dateInputRef.current as any).showPicker();
+        return;
+      } catch (err) {
+        console.log("showPicker not available, falling back...");
+      }
+    }
+
+    // Fallback: focus and click
+    dateInputRef.current.focus();
+    dateInputRef.current.click();
+  };
 
   // Get display name for country
   const displayCountry = country
@@ -144,13 +167,22 @@ export default function BlogPostPage() {
                 <label
                   htmlFor="date-picker-input"
                   className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:text-primary transition-colors text-xs sm:text-sm"
+                  onClick={openDatePicker}
+                  onTouchStart={openDatePicker}
                 >
-                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                  <Calendar 
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0 pointer-events-auto" 
+                    onClick={openDatePicker}
+                    onTouchStart={openDatePicker}
+                  />
                   <span className="break-words">{displayDate}</span>
                   <input
+                    ref={dateInputRef}
                     id="date-picker-input"
                     type="date"
                     onChange={handleDateChange}
+                    onClick={openDatePicker}
+                    onTouchStart={openDatePicker}
                     className="sr-only"
                     aria-label="Select date"
                   />
