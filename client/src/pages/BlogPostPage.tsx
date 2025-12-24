@@ -243,7 +243,7 @@ export default function BlogPostPage() {
             className="max-w-3xl mx-auto text-center py-12 sm:py-16 md:py-20"
           >
             <div className="mb-6 sm:mb-8 p-4 sm:p-6 md:p-8 rounded-full bg-primary/10 border border-primary/30 w-fit mx-auto">
-              <Calendar className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-primary opacity-50" />
+              <Calendar className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-primary" />
             </div>
 
             <h2 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-white mb-3 sm:mb-4 px-2">
