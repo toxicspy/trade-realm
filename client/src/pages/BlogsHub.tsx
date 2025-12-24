@@ -1,10 +1,10 @@
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { Calendar, BookOpen, Globe } from "lucide-react";
-import { useState } from "react";
-import { format } from "date-fns";
+import { useState, useMemo } from "react";
+import { format, parseISO, isValid } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,9 +17,19 @@ const countries = [
 
 export default function BlogsHub() {
   const [selectedCountry, setSelectedCountry] = useState("USA");
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const search = useSearch();
+  const searchParams = new URLSearchParams(search);
+  
+  // Read date from URL, no fallback to today
+  const selectedDateStr = searchParams.get("date");
+  const selectedDate = useMemo(() => {
+    if (selectedDateStr && isValid(parseISO(selectedDateStr))) {
+      return parseISO(selectedDateStr);
+    }
+    return null;
+  }, [selectedDateStr]);
 
-  const dateStr = format(selectedDate, "yyyy-MM-dd");
+  const dateStr = selectedDate ? format(selectedDate, "yyyy-MM-dd") : null;
 
   return (
     <div className="min-h-screen bg-background font-sans">
@@ -50,8 +60,14 @@ export default function BlogsHub() {
             <Calendar className="w-4 h-4 text-primary" />
             <input
               type="date"
-              value={dateStr}
-              onChange={(e) => setSelectedDate(new Date(e.target.value))}
+              value={dateStr || ""}
+              onChange={(e) => {
+                if (e.target.value) {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("date", e.target.value);
+                  window.history.pushState(null, "", url.toString());
+                }
+              }}
               className="bg-transparent text-white text-sm font-mono focus:outline-none"
             />
           </div>
@@ -89,29 +105,53 @@ export default function BlogsHub() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Link href={`/blogs/${selectedCountry}/${dateStr}`}>
-            <div className="p-8 rounded-xl border border-primary/20 bg-black/40 backdrop-blur-sm hover:bg-primary/10 transition-all duration-300 cursor-pointer group">
+          {selectedDate ? (
+            <Link href={`/blogs/${selectedCountry}?date=${dateStr}`}>
+              <div className="p-8 rounded-xl border border-primary/20 bg-black/40 backdrop-blur-sm hover:bg-primary/10 transition-all duration-300 cursor-pointer group">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="text-sm font-heading uppercase tracking-wider text-primary mb-2">
+                      {selectedCountry} Market
+                    </div>
+                    <h3 className="text-2xl font-heading font-bold text-white group-hover:text-primary transition-colors">
+                      {format(selectedDate, "MMMM dd, yyyy")}
+                    </h3>
+                  </div>
+                  <div className="text-primary/50 group-hover:text-primary transition-colors">
+                    <Globe className="w-6 h-6" />
+                  </div>
+                </div>
+                <p className="text-muted-foreground mb-6">
+                  View market analysis and trading insights for {selectedCountry}.
+                </p>
+                <Button variant="outline" className="group-hover:bg-primary/20 transition-colors">
+                  Read Article →
+                </Button>
+              </div>
+            </Link>
+          ) : (
+            <div className="p-8 rounded-xl border border-primary/20 bg-black/40 backdrop-blur-sm opacity-50 cursor-not-allowed">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <div className="text-sm font-heading uppercase tracking-wider text-primary mb-2">
                     {selectedCountry} Market
                   </div>
-                  <h3 className="text-2xl font-heading font-bold text-white group-hover:text-primary transition-colors">
-                    {format(selectedDate, "MMMM dd, yyyy")}
+                  <h3 className="text-2xl font-heading font-bold text-white">
+                    Select a date
                   </h3>
                 </div>
-                <div className="text-primary/50 group-hover:text-primary transition-colors">
+                <div className="text-primary/50">
                   <Globe className="w-6 h-6" />
                 </div>
               </div>
               <p className="text-muted-foreground mb-6">
-                View today's market analysis and trading insights for {selectedCountry}.
+                Select a date above to view market analysis and trading insights.
               </p>
-              <Button variant="outline" className="group-hover:bg-primary/20 transition-colors">
+              <Button variant="outline" disabled className="opacity-50">
                 Read Article →
               </Button>
             </div>
-          </Link>
+          )}
         </motion.div>
 
         {/* Archive Info */}

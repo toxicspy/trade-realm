@@ -1,4 +1,4 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useSearch } from "wouter";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useBlog } from "@/hooks/use-blogs";
@@ -7,8 +7,12 @@ import { ArrowLeft, Calendar, User, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function BlogPostPage() {
-  const { country, date } = useParams();
-  const { data: blog, isLoading } = useBlog(country || "", date || "");
+  const { country } = useParams();
+  const search = useSearch();
+  const searchParams = new URLSearchParams(search);
+  const date = searchParams.get("date") || "";
+  
+  const { data: blog, isLoading } = useBlog(country || "", date);
 
   return (
     <div className="min-h-screen bg-background font-sans">

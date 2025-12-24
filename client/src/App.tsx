@@ -16,7 +16,7 @@ function Router() {
       {/* Route handles :region param (usa, india, japan, crypto) */}
       <Route path="/market/:region/:date?" component={MarketPage} />
       <Route path="/blogs" component={BlogsHub} />
-      <Route path="/blogs/:country/:date" component={BlogPostPage} />
+      <Route path="/blogs/:country" component={BlogPostPage} />
       <Route component={NotFound} />
     </Switch>
   );

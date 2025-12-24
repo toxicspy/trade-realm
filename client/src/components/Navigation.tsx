@@ -250,8 +250,6 @@ export function Navigation() {
     { name: "Blogs", href: "/blogs" },
   ];
 
-  const currentDate = new Date();
-
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -359,7 +357,7 @@ export function Navigation() {
               className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full border border-white/5 hover:border-primary/30 transition-all duration-300 cursor-pointer group"
             >
               <Calendar className="w-3 h-3 text-primary group-hover:text-primary transition-colors" />
-              <span className="group-hover:text-primary transition-colors">{format(currentDate, "MMM dd, yyyy")}</span>
+              <span className="group-hover:text-primary transition-colors">Select Date</span>
             </button>
           </div>
 
@@ -368,12 +366,21 @@ export function Navigation() {
             isOpen={isCalendarOpen}
             onClose={() => setIsCalendarOpen(false)}
             onSelectDate={(date) => {
-              // Get current location path
-              const currentPath = location.includes("/market/") ? location.split("?")[0] : "/market/USA";
               const dateStr = format(date, "yyyy-MM-dd");
-              window.history.pushState(null, "", `${currentPath}?date=${dateStr}`);
-              // Trigger a page reload or state update to fetch new data
-              window.location.reload();
+              if (location.startsWith("/blogs")) {
+                // On blogs page - navigate to blogs with date param
+                const match = location.match(/\/blogs\/([^/?]+)/);
+                const country = match ? match[1] : "USA";
+                window.history.pushState(null, "", `/blogs/${country}?date=${dateStr}`);
+              } else if (location.includes("/market/")) {
+                // On market page - navigate to market with date in path
+                const match = location.match(/\/market\/([^/?]+)/);
+                const region = match ? match[1] : "USA";
+                window.history.pushState(null, "", `/market/${region}/${dateStr}`);
+              } else {
+                // Default to market
+                window.history.pushState(null, "", `/market/USA/${dateStr}`);
+              }
             }}
           />
         </nav>
