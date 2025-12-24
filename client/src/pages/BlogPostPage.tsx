@@ -7,7 +7,7 @@ import { ArrowLeft, Calendar, User, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format, parseISO, isValid } from "date-fns";
 import { blogDatabase } from "../../../data/blogs";
-import { MobileScrollableDatePicker } from "@/components/MobileScrollableDatePicker";
+import { MobileScrollableCalendar } from "@/components/MobileScrollableCalendar";
 
 // Map lowercase country names to display names
 const countryMap: { [key: string]: string } = {
@@ -325,13 +325,12 @@ export default function BlogPostPage() {
 
       <Footer />
 
-      {/* Mobile Date Picker Modal */}
-      <MobileScrollableDatePicker
+      {/* Mobile Calendar Modal */}
+      <MobileScrollableCalendar
         isOpen={showMobilePicker}
         onClose={() => setShowMobilePicker(false)}
         onDateSelect={handleMobileDateSelect}
         initialDate={dateStr || new Date().toISOString().split('T')[0]}
-        data-testid="mobile-date-picker"
       />
     </div>
   );
